@@ -1,10 +1,28 @@
 import * as React from "react";
-import { User, Shield, Building, Phone, Mail, Award, CheckCircle2, X } from "lucide-react";
+import {
+  User as UserIcon,
+  Building,
+  Phone,
+  Mail,
+  CheckCircle2,
+  X,
+  LogOut,
+  Edit3,
+  Plus,
+  Trash2,
+  Save,
+  Undo2,
+  Briefcase,
+  MapPin,
+  FileText,
+  AlertCircle,
+  Tag,
+} from "lucide-react";
 import { useStore } from "@/lib/store";
-import { allUsers } from "@/lib/cases";
-import type { Role } from "@/types";
+import { ROLE_PERMISSIONS } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import type { UserCustomField } from "@/types";
 
 export const ProfileModal = ({
   isOpen,
@@ -13,141 +31,569 @@ export const ProfileModal = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
-  const { currentUser, currentRole, setRole, setCurrentUser, cases } = useStore();
+  const { currentUser, currentRole, cases, logout, updateCurrentUserProfile } = useStore();
 
-  if (!isOpen) return null;
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [successMessage, setSuccessMessage] = React.useState("");
+  const [errorMessage, setErrorMessage] = React.useState("");
+
+  // Editable Form State
+  const [formData, setFormData] = React.useState({
+    name: "",
+    title: "",
+    phone: "",
+    secondaryPhone: "",
+    department: "",
+    facility: "",
+    bio: "",
+  });
+
+  // Custom Fields (Add / Remove / Update)
+  const [customFields, setCustomFields] = React.useState<UserCustomField[]>([]);
+  const [newFieldLabel, setNewFieldLabel] = React.useState("");
+  const [newFieldValue, setNewFieldValue] = React.useState("");
+
+  // Sync state whenever modal opens or currentUser changes
+  React.useEffect(() => {
+    if (currentUser) {
+      setFormData({
+        name: currentUser.name || "",
+        title: currentUser.title || "",
+        phone: currentUser.phone || "",
+        secondaryPhone: currentUser.secondaryPhone || "",
+        department: currentUser.department || "",
+        facility: currentUser.facility || "",
+        bio: currentUser.bio || "",
+      });
+      setCustomFields(currentUser.customFields ? [...currentUser.customFields] : []);
+      setIsEditing(false);
+      setSuccessMessage("");
+      setErrorMessage("");
+    }
+  }, [currentUser, isOpen]);
+
+  if (!isOpen || !currentUser) return null;
 
   // Compute workload for current user
   const userCases = cases.filter((c) => c.currentOwner === currentUser.id);
   const openCount = userCases.filter((c) => c.status === "open").length;
   const closedCount = userCases.filter((c) => c.status === "closed").length;
   const overdueCount = userCases.filter((c) => c.sideState === "overdue").length;
+  const roleConfig = currentRole ? ROLE_PERMISSIONS[currentRole] : null;
+
+  const handleSignOut = () => {
+    onClose();
+    logout();
+    window.location.href = "/login";
+  };
+
+  // Add a new custom field
+  const handleAddCustomField = () => {
+    if (!newFieldLabel.trim()) {
+      setErrorMessage("Please enter a field label (e.g., 'Pager Number' or 'Office Room').");
+      return;
+    }
+    if (!newFieldValue.trim()) {
+      setErrorMessage("Please enter a value for the field.");
+      return;
+    }
+
+    const newField: UserCustomField = {
+      id: `field_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      label: newFieldLabel.trim(),
+      value: newFieldValue.trim(),
+    };
+
+    setCustomFields([...customFields, newField]);
+    setNewFieldLabel("");
+    setNewFieldValue("");
+    setErrorMessage("");
+  };
+
+  // Remove a custom field
+  const handleRemoveCustomField = (id: string) => {
+    setCustomFields(customFields.filter((f) => f.id !== id));
+  };
+
+  // Update a custom field's value
+  const handleUpdateCustomField = (id: string, value: string) => {
+    setCustomFields(
+      customFields.map((f) => (f.id === id ? { ...f, value } : f))
+    );
+  };
+
+  // Save changes
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      setErrorMessage("Full Name is mandatory.");
+      return;
+    }
+
+    updateCurrentUserProfile({
+      name: formData.name.trim(),
+      title: formData.title.trim() || undefined,
+      phone: formData.phone.trim() || undefined,
+      secondaryPhone: formData.secondaryPhone.trim() || undefined,
+      department: formData.department.trim() || undefined,
+      facility: formData.facility.trim() || undefined,
+      bio: formData.bio.trim() || undefined,
+      customFields: customFields.length > 0 ? customFields : undefined,
+    });
+
+    setSuccessMessage("Personal information updated successfully!");
+    setErrorMessage("");
+    setIsEditing(false);
+
+    // Auto-clear success message after 3 seconds
+    setTimeout(() => {
+      setSuccessMessage("");
+    }, 3000);
+  };
+
+  const handleCancelEdit = () => {
+    if (currentUser) {
+      setFormData({
+        name: currentUser.name || "",
+        title: currentUser.title || "",
+        phone: currentUser.phone || "",
+        secondaryPhone: currentUser.secondaryPhone || "",
+        department: currentUser.department || "",
+        facility: currentUser.facility || "",
+        bio: currentUser.bio || "",
+      });
+      setCustomFields(currentUser.customFields ? [...currentUser.customFields] : []);
+    }
+    setIsEditing(false);
+    setErrorMessage("");
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-teal-deep/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-surface-card border border-surface-border rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-teal-deep to-teal-brand text-white p-6 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-teal-deep/50 backdrop-blur-xs animate-in fade-in duration-200 font-sans">
+      <div className="bg-[#FFFDF9] border border-[#E8DFD3] rounded-3xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header - Warm Saddle Light Brown */}
+        <div className="bg-gradient-to-r from-[#7B4D24] via-[#633D1C] to-[#7B4D24] text-white p-6 relative flex-shrink-0">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white/70 hover:text-white p-1"
+            className="absolute top-4 right-4 text-white/70 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+            aria-label="Close modal"
           >
             <X size={18} />
           </button>
 
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-2xl font-bold text-mint-light shadow-sm">
-              {currentUser.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-[#FAF6F0] border-2 border-white/30 flex items-center justify-center text-xl font-black text-[#7B4D24] shadow-md">
+                {currentUser.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </div>
+
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-black text-white">{currentUser.name}</h3>
+                  {currentUser.title && (
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-[#FAF6F0] font-semibold">
+                      {currentUser.title}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[#F5EBE1] font-semibold">
+                  {roleConfig?.roleTitle || currentUser.role}
+                </p>
+                <p className="text-[11px] text-[#F3E2D2]/80 flex items-center gap-1 mt-1">
+                  <Building size={12} /> {currentUser.organizationName}
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-0.5">
-              <h3 className="text-xl font-bold text-white">{currentUser.name}</h3>
-              <p className="text-xs text-mint-wash capitalize font-medium">
-                {currentUser.role === "admin"
-                  ? "Program Manager / Admin"
-                  : currentUser.role === "coordinator"
-                  ? "Care Coordinator / Navigator"
-                  : currentUser.role === "clinician"
-                  ? "Primary Care Clinician"
-                  : currentUser.role === "specialist"
-                  ? "Specialist / Receiving Clinician"
-                  : "Patient User"}
-              </p>
-              <p className="text-[11px] text-white/70 flex items-center gap-1 mt-1">
-                <Building size={12} /> {currentUser.facility}
-              </p>
-            </div>
+            {!isEditing && (
+              <Button
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="bg-[#FAF6F0] hover:bg-white text-[#633917] font-bold text-xs h-9 px-3 rounded-xl shadow-xs flex items-center gap-1.5 transition-all"
+              >
+                <Edit3 size={13} />
+                Edit Profile
+              </Button>
+            )}
           </div>
         </div>
 
-        {/* Details & KPIs */}
-        <div className="p-6 space-y-5">
-          {/* Workload Snapshot */}
-          <div>
-            <p className="text-xs font-bold text-teal-deep uppercase tracking-wider mb-2">
-              Active Assignment Workload
-            </p>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 rounded-xl bg-surface-white border border-surface-border text-center">
-                <p className="text-xl font-bold text-teal-deep">{openCount}</p>
-                <p className="text-[11px] text-muted">Open Cases</p>
-              </div>
-              <div className="p-3 rounded-xl bg-mint-wash border border-mint-light text-center">
-                <p className="text-xl font-bold text-teal-brand">{closedCount}</p>
-                <p className="text-[11px] text-teal-deep">Loops Closed</p>
-              </div>
-              <div className="p-3 rounded-xl bg-coral/10 border border-coral/30 text-center">
-                <p className="text-xl font-bold text-coral">{overdueCount}</p>
-                <p className="text-[11px] text-coral">Overdue SLAs</p>
-              </div>
-            </div>
+        {/* Status Notification Alerts */}
+        {successMessage && (
+          <div className="px-6 py-2.5 bg-emerald-50 border-b border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+            <CheckCircle2 size={15} className="text-emerald-600 flex-shrink-0" />
+            <span>{successMessage}</span>
           </div>
+        )}
 
-          {/* Department & Contact Details */}
-          <div className="space-y-2 text-xs">
-            <p className="text-xs font-bold text-teal-deep uppercase tracking-wider">
-              Department & Access
-            </p>
-            <div className="p-3 rounded-xl bg-surface-white border border-surface-border space-y-1.5">
-              <div className="flex justify-between">
-                <span className="text-muted">Department:</span>
-                <span className="font-semibold text-teal-deep">{currentUser.department || "Clinical Care"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted">Direct Email:</span>
-                <span className="font-semibold text-teal-brand">{currentUser.email || "user@careloop.health"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted">Direct Phone:</span>
-                <span className="font-semibold text-body">{currentUser.phone || "+1 (555) 234-5671"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted">Security Clearance:</span>
-                <span className="font-semibold text-teal-deep">HIPAA / Level 3 RBAC</span>
-              </div>
-            </div>
+        {errorMessage && (
+          <div className="px-6 py-2.5 bg-red-50 border-b border-red-200 text-red-800 text-xs font-semibold flex items-center gap-2">
+            <AlertCircle size={15} className="text-red-600 flex-shrink-0" />
+            <span>{errorMessage}</span>
           </div>
+        )}
 
-          {/* Switch Demo Persona */}
-          <div>
-            <p className="text-xs font-bold text-teal-deep uppercase tracking-wider mb-2">
-              Switch Demo User Persona
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
-              {allUsers.map((u) => {
-                const isSelected = u.id === currentUser.id;
-                return (
+        {/* Scrollable Body Content */}
+        <div className="p-6 space-y-6 overflow-y-auto flex-1 text-xs">
+          {/* VIEW MODE */}
+          {!isEditing ? (
+            <>
+              {/* Workload Snapshot */}
+              <div>
+                <p className="text-xs font-extrabold text-[#332219] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                  <Briefcase size={14} className="text-[#965F2B]" />
+                  Assignment &amp; Case Ownership
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="p-3 rounded-2xl bg-white border border-[#E8DFD3] text-center shadow-xs">
+                    <p className="text-xl font-black text-[#332219]">{openCount}</p>
+                    <p className="text-[11px] text-[#7B685B] font-medium">Assigned Open</p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-[#F4ECE1] border border-[#DFCBB5] text-center shadow-xs">
+                    <p className="text-xl font-black text-[#965F2B]">{closedCount}</p>
+                    <p className="text-[11px] text-[#332219] font-medium">Loops Closed</p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-center shadow-xs">
+                    <p className="text-xl font-black text-red-600">{overdueCount}</p>
+                    <p className="text-[11px] text-red-700 font-medium">Overdue</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Personal Information & Credentials */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-extrabold text-[#332219] uppercase tracking-wider flex items-center gap-1.5">
+                    <UserIcon size={14} className="text-[#965F2B]" />
+                    Personal &amp; Contact Information
+                  </p>
                   <button
-                    key={u.id}
-                    onClick={() => {
-                      setCurrentUser(u);
-                    }}
-                    className={`p-2.5 rounded-xl border text-left text-xs transition-all flex items-center justify-between ${
-                      isSelected
-                        ? "bg-mint-wash border-teal-brand text-teal-deep font-bold"
-                        : "border-surface-border bg-white hover:bg-surface-white text-body"
-                    }`}
+                    onClick={() => setIsEditing(true)}
+                    className="text-[11px] font-bold text-[#965F2B] hover:text-[#7E4D1E] hover:underline flex items-center gap-1"
                   >
-                    <div>
-                      <p className="font-semibold">{u.name}</p>
-                      <p className="text-[10px] text-muted capitalize">{u.role} • {u.facility.split(" ")[0]}</p>
-                    </div>
-                    {isSelected && <CheckCircle2 size={16} className="text-teal-brand" />}
+                    <Edit3 size={11} /> Update
                   </button>
-                );
-              })}
-            </div>
-          </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white border border-[#E8DFD3] space-y-2.5 shadow-xs">
+                  <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
+                    <span className="text-[#7B685B] font-medium">Full Name:</span>
+                    <span className="font-bold text-[#332219]">{currentUser.name}</span>
+                  </div>
+
+                  {currentUser.title && (
+                    <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
+                      <span className="text-[#7B685B] font-medium">Professional Title:</span>
+                      <span className="font-semibold text-[#332219]">{currentUser.title}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
+                    <span className="text-[#7B685B] font-medium">Clinical Email:</span>
+                    <span className="font-mono font-semibold text-[#965F2B] text-[11px]">
+                      {currentUser.email}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
+                    <span className="text-[#7B685B] font-medium">Direct Phone:</span>
+                    <span className="font-semibold text-[#332219]">
+                      {currentUser.phone || "Not set"}
+                    </span>
+                  </div>
+
+                  {currentUser.secondaryPhone && (
+                    <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
+                      <span className="text-[#7B685B] font-medium">Emergency / Alt Phone:</span>
+                      <span className="font-semibold text-[#332219]">
+                        {currentUser.secondaryPhone}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
+                    <span className="text-[#7B685B] font-medium">Department:</span>
+                    <span className="font-semibold text-[#332219]">
+                      {currentUser.department || "Clinical Care"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
+                    <span className="text-[#7B685B] font-medium">Primary Facility:</span>
+                    <span className="font-semibold text-[#332219]">{currentUser.facility}</span>
+                  </div>
+
+                  {currentUser.bio && (
+                    <div className="pt-1.5">
+                      <span className="text-[#7B685B] font-medium block mb-1">Professional Bio / Notes:</span>
+                      <p className="p-2.5 rounded-xl bg-[#FAF6F0] text-[#36271E] text-xs leading-relaxed border border-[#E8DFD3]">
+                        {currentUser.bio}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Custom Personal Details Added by User */}
+              {currentUser.customFields && currentUser.customFields.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-extrabold text-[#332219] uppercase tracking-wider flex items-center gap-1.5">
+                    <Tag size={14} className="text-[#965F2B]" />
+                    Additional Personal Fields ({currentUser.customFields.length})
+                  </p>
+                  <div className="p-3.5 rounded-2xl bg-white border border-[#E8DFD3] space-y-2 shadow-xs">
+                    {currentUser.customFields.map((field) => (
+                      <div
+                        key={field.id}
+                        className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/50 last:border-0"
+                      >
+                        <span className="text-[#7B685B] font-medium">{field.label}:</span>
+                        <span className="font-bold text-[#332219]">{field.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            /* EDIT MODE - Update, Add, Remove */
+            <form onSubmit={handleSaveProfile} className="space-y-5">
+              <div className="flex items-center justify-between pb-2 border-b border-[#E8DFD3]">
+                <span className="font-extrabold text-sm text-[#332219] flex items-center gap-1.5">
+                  <Edit3 size={15} className="text-[#965F2B]" />
+                  Edit Personal Information
+                </span>
+                <span className="text-[11px] text-[#7B685B]">
+                  Update values, add new attributes, or remove fields
+                </span>
+              </div>
+
+              {/* Basic Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    placeholder="e.g. Sarah Thompson"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                    Title / Credentials
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    placeholder="e.g. BSN, RN or MD, FACS"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                    Direct Clinical Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    placeholder="+1 (555) 100-2004"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                    Alternate / Emergency Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.secondaryPhone}
+                    onChange={(e) => setFormData({ ...formData, secondaryPhone: e.target.value })}
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    placeholder="+1 (555) 999-8888"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                    Department
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.department}
+                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    placeholder="e.g. Care Coordination"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                    Facility Location
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.facility}
+                    onChange={(e) => setFormData({ ...formData, facility: e.target.value })}
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    placeholder="e.g. Apex Ambulatory Pavilion"
+                  />
+                </div>
+              </div>
+
+              {/* Bio / Summary */}
+              <div>
+                <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                  Professional Bio / Clinical Notes
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  className="w-full p-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-medium text-xs outline-none resize-none"
+                  placeholder="Specializations, clinical responsibilities, or languages spoken..."
+                />
+              </div>
+
+              {/* Custom Fields - Add & Remove */}
+              <div className="pt-2 border-t border-[#E8DFD3] space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] font-extrabold text-[#332219] uppercase tracking-wider">
+                    Custom Attributes &amp; Contacts
+                  </label>
+                  <span className="text-[10px] text-[#7B685B]">
+                    {customFields.length} field{customFields.length === 1 ? "" : "s"} added
+                  </span>
+                </div>
+
+                {/* Existing custom fields with Remove option */}
+                {customFields.length > 0 && (
+                  <div className="space-y-2">
+                    {customFields.map((field) => (
+                      <div
+                        key={field.id}
+                        className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-[#E8DFD3]"
+                      >
+                        <div className="w-1/3">
+                          <span className="text-[11px] font-bold text-[#332219] truncate block">
+                            {field.label}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <input
+                            type="text"
+                            value={field.value}
+                            onChange={(e) => handleUpdateCustomField(field.id, e.target.value)}
+                            className="w-full h-8 px-2.5 rounded-lg bg-[#FAF6F0] border border-[#E8DFD3] text-[#332219] text-xs font-semibold outline-none focus:border-[#965F2B]"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCustomField(field.id)}
+                          className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors"
+                          title={`Remove ${field.label}`}
+                          aria-label={`Remove ${field.label}`}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add New Custom Field Form */}
+                <div className="p-3.5 rounded-2xl bg-[#FAF6F0] border border-[#DFCBB5] space-y-2.5">
+                  <span className="text-[11px] font-bold text-[#7B4D24] block">
+                    + Add New Personal Information Field
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 items-center">
+                    <div className="sm:col-span-2">
+                      <input
+                        type="text"
+                        value={newFieldLabel}
+                        onChange={(e) => setNewFieldLabel(e.target.value)}
+                        placeholder="Label (e.g. Pager #, Room)"
+                        className="w-full h-8 px-2.5 rounded-lg bg-white border border-[#E8DFD3] text-[#332219] text-xs outline-none focus:border-[#965F2B]"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <input
+                        type="text"
+                        value={newFieldValue}
+                        onChange={(e) => setNewFieldValue(e.target.value)}
+                        placeholder="Value (e.g. Ext 4402)"
+                        className="w-full h-8 px-2.5 rounded-lg bg-white border border-[#E8DFD3] text-[#332219] text-xs outline-none focus:border-[#965F2B]"
+                      />
+                    </div>
+                    <div className="sm:col-span-1">
+                      <button
+                        type="button"
+                        onClick={handleAddCustomField}
+                        className="w-full h-8 px-2.5 rounded-lg bg-[#965F2B] hover:bg-[#7E4D1E] text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors"
+                      >
+                        <Plus size={13} /> Add
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Edit Actions: Save / Cancel */}
+              <div className="pt-3 border-t border-[#E8DFD3] flex items-center justify-end gap-2.5">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCancelEdit}
+                  className="text-xs border-[#E8DFD3] text-[#7B685B] hover:bg-[#F4ECE1] font-semibold h-9 px-4 rounded-xl flex items-center gap-1.5"
+                >
+                  <Undo2 size={13} /> Cancel
+                </Button>
+
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="bg-[#965F2B] hover:bg-[#7E4D1E] text-white font-extrabold text-xs h-9 px-5 rounded-xl shadow-md shadow-[#965F2B]/20 flex items-center gap-1.5"
+                >
+                  <Save size={13} /> Save Profile Changes
+                </Button>
+              </div>
+            </form>
+          )}
         </div>
 
-        {/* Footer */}
-        <div className="p-4 bg-surface-white border-t border-surface-border flex justify-end">
-          <Button size="sm" onClick={onClose} className="bg-teal-brand text-white text-xs font-semibold">
-            Done
+        {/* Footer with Sign Out */}
+        <div className="p-4 bg-[#FAF6F0] border-t border-[#E8DFD3] flex items-center justify-between flex-shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleSignOut}
+            className="text-xs font-bold text-[#C44F3D] hover:bg-[#FBECE9] border-[#E8DFD3] flex items-center gap-1.5 rounded-xl h-8"
+          >
+            <LogOut size={13} /> Sign Out of CareLoop
           </Button>
+
+          {!isEditing && (
+            <Button
+              size="sm"
+              onClick={onClose}
+              className="bg-[#332219] hover:bg-[#4D3425] text-white text-xs font-semibold rounded-xl h-8 px-4"
+            >
+              Done
+            </Button>
+          )}
         </div>
       </div>
     </div>

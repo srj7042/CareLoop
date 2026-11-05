@@ -35,7 +35,7 @@ CareLoop is a closed-loop healthcare tracking platform designed to eliminate dia
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/CareLoop.git
+git clone https://github.com/srj7042/CareLoop.git
 cd CareLoop
 
 # Install dependencies

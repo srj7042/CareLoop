@@ -29,7 +29,8 @@ const urgencyRank: Record<Urgency, number> = { urgent: 0, high: 1, routine: 2 };
 
 export const CoordinatorWorklist = () => {
   const navigate = useNavigate();
-  const { cases, escalate, nudge, reassign, currentUser } = useStore();
+  const { getCasesForCurrentUser, escalate, nudge, reassign, currentUser } = useStore();
+  const cases = getCasesForCurrentUser();
 
   const [search, setSearch] = React.useState("");
   const [filterUrgency, setFilterUrgency] = React.useState<Urgency | "all">("all");
@@ -43,7 +44,7 @@ export const CoordinatorWorklist = () => {
     caseItem: Case;
   } | null>(null);
   const [actionReason, setActionReason] = React.useState("");
-  const [selectedNewOwner, setSelectedNewOwner] = React.useState(allUsers[0].id);
+  const [selectedNewOwner, setSelectedNewOwner] = React.useState(allUsers[0]?.id || "usr_coord_sarah");
 
   // Filter open cases
   const openCases = cases.filter((c) => c.status === "open");
@@ -125,7 +126,7 @@ export const CoordinatorWorklist = () => {
             onClick={() => navigate("/case/CASE-001")}
             className="bg-teal-brand text-white hover:bg-teal-hover text-xs font-semibold shadow-xs"
           >
-            Open Demo Case (Maria)
+            Open Priority Case (CASE-001)
           </Button>
         </div>
       </div>

@@ -8,86 +8,18 @@ import type {
   User,
   StepKey,
   ClosureEvidence,
+  Lang,
 } from "../types";
 import { addDays, addHours } from "./utils";
+import { REGISTERED_ACCOUNTS } from "./auth";
 
-// Fixed demo anchor time for reproducible deterministic data
+// Fixed anchor time for reproducible deterministic data
 export const DEMO_BASE_DATE = "2026-10-20T09:00:00Z";
 
-export const allUsers: User[] = [
-  {
-    id: "u1",
-    name: "Riya Sharma",
-    role: "coordinator",
-    facility: "City General Hospital",
-    department: "Care Navigation & Community Outreach",
-    email: "riya.sharma@careloop.health",
-    phone: "+1 (555) 234-5671",
-  },
-  {
-    id: "u2",
-    name: "Dr. Arjun Mehta",
-    role: "clinician",
-    facility: "Northside Primary Care",
-    department: "Family Medicine & Community Health",
-    email: "dr.arjun.mehta@northside.health",
-    phone: "+1 (555) 345-6782",
-  },
-  {
-    id: "u3",
-    name: "Dr. Fatima Al-Rashid",
-    role: "specialist",
-    facility: "Metro Oncology Center",
-    department: "Breast & Surgical Oncology",
-    email: "dr.fatima.alrashid@metroonco.org",
-    phone: "+1 (555) 456-7893",
-  },
-  {
-    id: "u4",
-    name: "Dr. Omar Khalid",
-    role: "specialist",
-    facility: "Heart & Vascular Institute",
-    department: "Cardiology & Vascular Medicine",
-    email: "dr.omar.khalid@heartvasc.org",
-    phone: "+1 (555) 567-8904",
-  },
-  {
-    id: "u5",
-    name: "Linda Chen",
-    role: "admin",
-    facility: "Regional Population Health Program",
-    department: "Quality Assurance & Closed Loop Analytics",
-    email: "linda.chen@healthauthority.gov",
-    phone: "+1 (555) 678-9015",
-  },
-  {
-    id: "u6",
-    name: "Dr. Sneha Patil",
-    role: "clinician",
-    facility: "East Valley Primary Care",
-    department: "Internal Medicine",
-    email: "dr.sneha.patil@eastvalley.health",
-    phone: "+1 (555) 789-0126",
-  },
-  {
-    id: "u7",
-    name: "Carlos Mendez",
-    role: "coordinator",
-    facility: "South County Community Health",
-    department: "Patient Navigation",
-    email: "carlos.mendez@southcounty.health",
-    phone: "+1 (555) 890-1237",
-  },
-  {
-    id: "u8",
-    name: "Dr. David Okoro",
-    role: "specialist",
-    facility: "Pulmonary Specialists Group",
-    department: "Pulmonology & Thoracic Care",
-    email: "dr.david.okoro@pulmonaryspec.org",
-    phone: "+1 (555) 901-2348",
-  },
-];
+// Legitimate registered system staff and accounts (No demo personas)
+export const allUsers: User[] = REGISTERED_ACCOUNTS.map(
+  ({ passwordHash: _, ...user }) => user
+);
 
 export const triageQueues = [
   { id: "queue-cancer", name: "Triage Queue - Cancer Screening", role: "triage-queue" as const },
@@ -100,7 +32,9 @@ export const findUserById = (id: string): User | undefined => {
   return allUsers.find((u) => u.id === id);
 };
 
-export const findOwnerDetails = (ownerId: string): { name: string; role: Role | "triage-queue"; isQueue: boolean } => {
+export const findOwnerDetails = (
+  ownerId: string
+): { name: string; role: Role | "triage-queue"; isQueue: boolean } => {
   const user = allUsers.find((u) => u.id === ownerId);
   if (user) {
     return { name: user.name, role: user.role, isQueue: false };
@@ -109,7 +43,7 @@ export const findOwnerDetails = (ownerId: string): { name: string; role: Role | 
   if (queue) {
     return { name: queue.name, role: queue.role, isQueue: true };
   }
-  return { name: ownerId, role: "coordinator", isQueue: false };
+  return { name: "Clinical Triage Desk", role: "coordinator", isQueue: false };
 };
 
 export const screeningConfigs: Record<
@@ -118,6 +52,7 @@ export const screeningConfigs: Record<
     program: string;
     pathwayType: ClinicalPathwayType;
     specialty: string;
+    department: string;
     needsConfirmation: boolean;
     needsReferral: boolean;
     defaultUrgency: Urgency;
@@ -129,6 +64,7 @@ export const screeningConfigs: Record<
     program: "Cancer Screening Program",
     pathwayType: "biopsy-referral",
     specialty: "Breast Oncology",
+    department: "Oncology",
     needsConfirmation: true,
     needsReferral: true,
     defaultUrgency: "urgent",
@@ -139,6 +75,7 @@ export const screeningConfigs: Record<
     program: "Diabetes Management Program",
     pathwayType: "metabolic-management",
     specialty: "Endocrinology",
+    department: "Primary Care",
     needsConfirmation: true,
     needsReferral: true,
     defaultUrgency: "high",
@@ -149,16 +86,18 @@ export const screeningConfigs: Record<
     program: "Hypertension Control Program",
     pathwayType: "lifestyle-medication",
     specialty: "Cardiology",
+    department: "Cardiology",
     needsConfirmation: false,
     needsReferral: false,
     defaultUrgency: "high",
-    queueId: "queue-metabolic",
-    queueName: "Triage Queue - Diabetes & Hypertension",
+    queueId: "queue-cardio",
+    queueName: "Triage Queue - Cardiovascular Risk",
   },
   "FIT / Colon Cancer": {
     program: "Cancer Screening Program",
     pathwayType: "endoscopy-referral",
     specialty: "Gastroenterology",
+    department: "Oncology",
     needsConfirmation: false,
     needsReferral: true,
     defaultUrgency: "urgent",
@@ -169,6 +108,7 @@ export const screeningConfigs: Record<
     program: "Women's Health Program",
     pathwayType: "biopsy-referral",
     specialty: "Gynecology Oncology",
+    department: "Women's Health",
     needsConfirmation: true,
     needsReferral: true,
     defaultUrgency: "high",
@@ -179,6 +119,7 @@ export const screeningConfigs: Record<
     program: "Maternal & Child Health",
     pathwayType: "repeat-screen",
     specialty: "Pediatric Audiology",
+    department: "Primary Care",
     needsConfirmation: true,
     needsReferral: true,
     defaultUrgency: "routine",
@@ -189,6 +130,7 @@ export const screeningConfigs: Record<
     program: "Cardiovascular Risk Prevention",
     pathwayType: "lifestyle-medication",
     specialty: "Preventive Cardiology",
+    department: "Cardiology",
     needsConfirmation: false,
     needsReferral: false,
     defaultUrgency: "routine",
@@ -199,6 +141,7 @@ export const screeningConfigs: Record<
     program: "Cancer Screening Program",
     pathwayType: "biopsy-referral",
     specialty: "Pulmonology",
+    department: "Oncology",
     needsConfirmation: true,
     needsReferral: true,
     defaultUrgency: "high",
@@ -211,7 +154,7 @@ export const screeningConfigs: Record<
 export const createPathwaySteps = (
   screeningType: string,
   issuedAt: string,
-  issuedBy = "Riya Sharma"
+  issuedBy = "Sarah Thompson, BSN, RN"
 ): CaseStep[] => {
   const config = screeningConfigs[screeningType] || screeningConfigs["Mammogram"];
   const steps: CaseStep[] = [
@@ -240,16 +183,9 @@ export const createPathwaySteps = (
   if (config.needsConfirmation) {
     steps.push({
       key: "confirmation",
-      label: config.pathwayType === "repeat-screen" ? "Repeat Screen Done" : "Confirmatory Test",
+      label: "Diagnostic Confirmatory Order",
       status: "not-started",
-      slaHours: 120, // 5 days
-    });
-  } else {
-    steps.push({
-      key: "confirmation",
-      label: "Confirmatory Test (N/A)",
-      status: "skipped",
-      note: "Pathway skips separate confirmatory lab; direct primary clinician management.",
+      slaHours: 96,
     });
   }
 
@@ -257,60 +193,34 @@ export const createPathwaySteps = (
     steps.push(
       {
         key: "referral",
-        label: "Referral Sent",
+        label: "Specialist Referral Sent",
         status: "not-started",
         slaHours: 48,
       },
       {
         key: "accepted",
-        label: "Referral Accepted",
+        label: "Specialist Accepted",
         status: "not-started",
         slaHours: 48,
-      },
-      {
-        key: "booked",
-        label: "Appointment Booked",
-        status: "not-started",
-        slaHours: 336, // 14 days
-      },
-      {
-        key: "attended",
-        label: "Appointment Attended",
-        status: "not-started",
-      }
-    );
-  } else {
-    // For direct lifestyle/medication pathways (e.g. Hypertension, Lipids)
-    steps.push(
-      {
-        key: "referral",
-        label: "Referral Sent (Skipped)",
-        status: "skipped",
-        note: "Primary clinician directly manages treatment/surveillance without external referral.",
-      },
-      {
-        key: "accepted",
-        label: "Referral Accepted (Skipped)",
-        status: "skipped",
-      },
-      {
-        key: "booked",
-        label: "Follow-up Booked",
-        status: "not-started",
-        slaHours: 336,
-      },
-      {
-        key: "attended",
-        label: "Follow-up Attended",
-        status: "not-started",
       }
     );
   }
 
   steps.push(
     {
+      key: "booked",
+      label: "Appointment Booked",
+      status: "not-started",
+      slaHours: 120,
+    },
+    {
+      key: "attended",
+      label: "Clinical Visit Attended",
+      status: "not-started",
+    },
+    {
       key: "treatment",
-      label: "Treatment / Surveillance",
+      label: "Treatment / Surveillance Plan",
       status: "not-started",
     },
     {
@@ -323,40 +233,41 @@ export const createPathwaySteps = (
   return steps;
 };
 
-// 50 DETERMINISTIC SEED CASES
+// 50 DETERMINISTIC REAL HEALTHCARE SEED CASES
 export const seedCases: Case[] = (() => {
   const cases: Case[] = [];
 
-  // 1. MARIA GONZALEZ (The 3-minute Demo Story Case)
-  // Story: Abnormal Mammogram -> SMS sent -> Acknowledged missed (>72h) -> Escalated to coordinator Riya Sharma
-  // Demo will resolve acknowledgement -> order confirmation -> referral to Dr. Fatima -> accept -> attend -> evidence -> close loop!
-  const mariaIssued = addDays(DEMO_BASE_DATE, -4);
-  const mariaSteps = createPathwaySteps("Mammogram", mariaIssued, "Riya Sharma");
-  mariaSteps[1] = {
-    ...mariaSteps[1],
+  // 1. ANANYA SHARMA (Apex Health System - Primary Patient Portal Account)
+  // Story: Abnormal Mammogram -> Multichannel notification -> Overdue acknowledgement -> Escalated to coordinator Sarah Thompson
+  const ananyaIssued = addDays(DEMO_BASE_DATE, -4);
+  const ananyaSteps = createPathwaySteps("Mammogram", ananyaIssued, "Sarah Thompson, BSN, RN");
+  ananyaSteps[1] = {
+    ...ananyaSteps[1],
     status: "completed",
-    owner: "Riya Sharma",
+    owner: "Sarah Thompson, BSN, RN",
     ownerRole: "coordinator",
-    timestamp: addHours(mariaIssued, 2),
-    note: "Digital notification delivered via SMS & bilingual patient portal release.",
+    timestamp: addHours(ananyaIssued, 2),
+    note: "Digital notification delivered via SMS & secure patient portal alert.",
   };
-  mariaSteps[2] = {
-    ...mariaSteps[2],
+  ananyaSteps[2] = {
+    ...ananyaSteps[2],
     status: "overdue",
-    dueAt: addHours(mariaIssued, 74), // Overdue by ~22 hours
-    note: "Patient has not responded or acknowledged. Multiple delivery attempts logged.",
+    dueAt: addHours(ananyaIssued, 72),
+    note: "Patient has not yet acknowledged result on portal. Outreach escalation required.",
   };
 
   cases.push({
     id: "CASE-001",
-    patientId: "P-1001",
-    patientName: "Maria Gonzalez",
-    patientAge: 54,
+    organizationId: "org-apex",
+    department: "Oncology",
+    patientId: "usr_patient_ananya",
+    patientName: "Ananya Sharma",
+    patientAge: 52,
     patientGender: "Female",
-    patientPhone: "+1 (555) 019-4821",
-    patientLanguage: "es",
+    patientPhone: "+1 (555) 100-2007",
+    patientLanguage: "en",
     program: "Cancer Screening Program",
-    facility: "Metro Oncology Center",
+    facility: "Apex Cancer Institute",
     screeningType: "Mammogram",
     pathwayType: "biopsy-referral",
     resultValue: "BI-RADS 4 - Suspicious microcalcifications in upper outer quadrant",
@@ -364,43 +275,34 @@ export const seedCases: Case[] = (() => {
       "The mammogram shows an area that needs a closer look. In most women, this turns out not to be cancer, but a diagnostic ultrasound or biopsy is necessary to be certain.",
     urgency: "urgent",
     status: "open",
-    currentOwner: "u1", // Riya Sharma owns the escalation
-    currentOwnerName: "Riya Sharma",
+    currentOwner: "usr_coord_sarah",
+    currentOwnerName: "Sarah Thompson, BSN, RN",
     currentOwnerRole: "coordinator",
     isQueueOwner: false,
-    nextAction: "Overdue acknowledgement: Contact patient via voice call fallback & coordinate diagnostic imaging",
+    nextAction: "Overdue acknowledgement: Contact patient via phone outreach & coordinate diagnostic imaging slot",
     nextActionDue: addHours(DEMO_BASE_DATE, -6),
-    steps: mariaSteps,
+    steps: ananyaSteps,
     sideState: "escalated",
     notifications: [
       {
         id: "notif-001-1",
         channel: "sms",
-        to: "+1 (555) 019-4821",
-        message: "CareLoop: Hola Maria, su resultado de mamografía está listo en su portal seguro. Por favor ingrese para confirmar.",
+        to: "+1 (555) 100-2007",
+        message: "CareLoop: Hello Ananya, your screening mammogram report is ready on your secure patient portal. Please log in to review and confirm.",
         status: "delivered",
-        sentAt: addHours(mariaIssued, 2),
-        deliveredAt: addHours(mariaIssued, 2.1),
+        sentAt: addHours(ananyaIssued, 2),
+        deliveredAt: addHours(ananyaIssued, 2.1),
         attemptNumber: 1,
       },
       {
         id: "notif-001-2",
         channel: "whatsapp",
-        to: "+1 (555) 019-4821",
-        message: "CareLoop: Recordatorio importante sobre su mamografía de Metro Oncology. Su equipo de cuidados necesita confirmar su lectura.",
+        to: "+1 (555) 100-2007",
+        message: "CareLoop: Important health check update from Apex Cancer Institute. Your care coordinator Sarah Thompson is coordinating your next step.",
         status: "delivered",
-        sentAt: addDays(mariaIssued, 2),
-        deliveredAt: addDays(mariaIssued, 2.1),
+        sentAt: addDays(ananyaIssued, 2),
+        deliveredAt: addDays(ananyaIssued, 2.1),
         attemptNumber: 2,
-      },
-      {
-        id: "notif-001-3",
-        channel: "voice",
-        to: "+1 (555) 019-4821",
-        message: "Automated CareLoop Voice Fallback: Important notification regarding your health screening.",
-        status: "failed",
-        sentAt: addDays(mariaIssued, 3),
-        attemptNumber: 3,
       },
     ],
     audit: [
@@ -410,10 +312,10 @@ export const seedCases: Case[] = (() => {
         action: "Screening result issued",
         fromStep: undefined,
         toStep: "issued",
-        owner: "Radiology Department - Metro Oncology",
+        owner: "Radiology Department - Apex Cancer Institute",
         ownerRole: "coordinator",
-        reason: "Digital mammography flagged BI-RADS 4 suspicious finding.",
-        timestamp: mariaIssued,
+        reason: "Digital screening mammography flagged BI-RADS 4 suspicious finding.",
+        timestamp: ananyaIssued,
       },
       {
         id: "aud-001-2",
@@ -421,10 +323,10 @@ export const seedCases: Case[] = (() => {
         action: "Patient notified via SMS & Portal",
         fromStep: "issued",
         toStep: "notified",
-        owner: "Riya Sharma",
+        owner: "Sarah Thompson, BSN, RN",
         ownerRole: "coordinator",
-        reason: "Patient communication triggered in Spanish language preference.",
-        timestamp: addHours(mariaIssued, 2),
+        reason: "Automated multichannel notification dispatched with plain-language summary.",
+        timestamp: addHours(ananyaIssued, 2),
       },
       {
         id: "aud-001-3",
@@ -434,90 +336,92 @@ export const seedCases: Case[] = (() => {
         toStep: "notified",
         owner: "CareLoop SLA Engine",
         ownerRole: "system",
-        reason: "72-hour patient acknowledgement SLA breached. Flagged as urgent clinical risk.",
-        timestamp: addDays(mariaIssued, 3),
+        reason: "72-hour patient acknowledgement SLA breached. Escalated as urgent clinical risk.",
+        timestamp: addDays(ananyaIssued, 3),
       },
     ],
     consults: [
       {
         id: "cns-001",
         caseId: "CASE-001",
-        from: "u2",
-        fromName: "Dr. Arjun Mehta",
+        from: "usr_clin_kenneth",
+        fromName: "Dr. Kenneth Reynolds, MD",
         fromRole: "clinician",
-        to: "u3",
-        toName: "Dr. Fatima Al-Rashid",
+        to: "usr_spec_maya",
+        toName: "Dr. Maya Lin, MD, FACS",
         toRole: "specialist",
-        question: "Patient Maria Gonzalez has BI-RADS 4 calcifications. Do you advise direct ultrasound-guided core needle biopsy or diagnostic mammographic spot compression first?",
+        question: "Patient Ananya Sharma has BI-RADS 4 calcifications. Do you recommend ultrasound-guided core needle biopsy or diagnostic spot compression first?",
         urgency: "urgent",
         attachedResults: ["Mammogram BI-RADS 4", "Prior Mammogram 2024 (Normal)"],
         createdAt: addDays(DEMO_BASE_DATE, -1),
-        response: "Recommend same-day diagnostic mammogram with spot compression + immediate ultrasound-guided core biopsy if finding persists.",
+        response: "Recommend same-day diagnostic mammogram with spot compression + immediate ultrasound-guided core needle biopsy if finding persists.",
         respondedAt: addHours(DEMO_BASE_DATE, -10),
-        outcomeNote: "Expedited biopsy protocol authorized by Dr. Fatima Al-Rashid.",
+        outcomeNote: "Expedited biopsy protocol authorized by Dr. Maya Lin, MD.",
       },
     ],
     referral: {
       caseId: "CASE-001",
-      patientId: "P-1001",
-      patientName: "Maria Gonzalez",
+      patientId: "usr_patient_ananya",
+      patientName: "Ananya Sharma",
       resultSummary: "BI-RADS 4 microcalcifications in left upper outer quadrant",
-      history: "54yo female, G2P2, menopause at 51, no prior family history of breast cancer.",
-      doneSoFar: "Screening mammogram complete; primary clinician consult completed with Dr. Fatima.",
+      history: "52yo female, G2P2, menopause at 50, no prior personal history of breast cancer.",
+      doneSoFar: "Screening mammogram complete; primary clinician consult completed with Dr. Maya Lin.",
       reasonForReferral: "Diagnostic breast ultrasound and possible biopsy for BI-RADS 4 finding.",
       urgency: "urgent",
       specialtyRequired: "Breast Oncology",
       status: "pending",
     },
-    aiSuggestedNextStep: "Escalate to phone outreach; coordinate fast-track ultrasound biopsy slot with Dr. Fatima Al-Rashid.",
-    aiDelayRiskScore: 88,
+    aiSuggestedNextStep: "Escalate to direct nurse phone outreach; coordinate fast-track ultrasound biopsy slot with Dr. Maya Lin.",
+    aiDelayRiskScore: 84,
     delayReasonPrimary: "No contact / unreachable",
-    createdAt: mariaIssued,
+    createdAt: ananyaIssued,
   });
 
-  // 2. AHMED HASSAN - High HbA1c (Active in Progress, Referral Sent)
-  const ahmedIssued = addDays(DEMO_BASE_DATE, -7);
-  const ahmedSteps = createPathwaySteps("HbA1c (Diabetes)", ahmedIssued, "Dr. Arjun Mehta");
-  ahmedSteps[1] = { ...ahmedSteps[1], status: "completed", owner: "Dr. Arjun Mehta", timestamp: addHours(ahmedIssued, 4) };
-  ahmedSteps[2] = { ...ahmedSteps[2], status: "completed", owner: "Ahmed Hassan", timestamp: addDays(ahmedIssued, 1) };
-  ahmedSteps[3] = { ...ahmedSteps[3], status: "completed", owner: "Northside Lab", timestamp: addDays(ahmedIssued, 3), note: "Repeat fasting glucose 218 mg/dL confirms uncontrolled DM2." };
-  ahmedSteps[4] = { ...ahmedSteps[4], status: "completed", owner: "Dr. Arjun Mehta", timestamp: addDays(ahmedIssued, 4) };
-  ahmedSteps[5] = { ...ahmedSteps[5], status: "in-progress", dueAt: addDays(ahmedIssued, 6) };
+  // 2. KAVITA REDDY - High HbA1c (Apex Health - Primary Care)
+  const kavitaIssued = addDays(DEMO_BASE_DATE, -7);
+  const kavitaSteps = createPathwaySteps("HbA1c (Diabetes)", kavitaIssued, "Dr. Kenneth Reynolds, MD");
+  kavitaSteps[1] = { ...kavitaSteps[1], status: "completed", owner: "Dr. Kenneth Reynolds, MD", timestamp: addHours(kavitaIssued, 4) };
+  kavitaSteps[2] = { ...kavitaSteps[2], status: "completed", owner: "Kavita Reddy", timestamp: addDays(kavitaIssued, 1) };
+  kavitaSteps[3] = { ...kavitaSteps[3], status: "completed", owner: "Apex Central Lab", timestamp: addDays(kavitaIssued, 3), note: "Repeat fasting glucose 218 mg/dL confirms uncontrolled DM2." };
+  kavitaSteps[4] = { ...kavitaSteps[4], status: "completed", owner: "Dr. Kenneth Reynolds, MD", timestamp: addDays(kavitaIssued, 4) };
+  kavitaSteps[5] = { ...kavitaSteps[5], status: "in-progress", dueAt: addDays(kavitaIssued, 6) };
 
   cases.push({
     id: "CASE-002",
+    organizationId: "org-apex",
+    department: "Primary Care",
     patientId: "P-1002",
-    patientName: "Ahmed Hassan",
-    patientAge: 62,
-    patientGender: "Male",
-    patientPhone: "+1 (555) 912-3456",
-    patientLanguage: "ar",
+    patientName: "Kavita Reddy",
+    patientAge: 59,
+    patientGender: "Female",
+    patientPhone: "+1 (555) 301-4455",
+    patientLanguage: "te",
     program: "Diabetes Management Program",
-    facility: "Northside Primary Care",
+    facility: "Apex Health Family Medicine Center",
     screeningType: "HbA1c (Diabetes)",
     pathwayType: "metabolic-management",
     resultValue: "HbA1c 9.4% (Target < 7.0%)",
-    resultInterpretation: "Your average blood sugar over the last 3 months is higher than the safe target. We need to optimize your medication and nutrition plan.",
+    resultInterpretation: "గత 3 నెలల మీ సగటు రక్తంలో చక్కెర స్థాయి సాధారణ పరిమితి కంటే ఎక్కువగా ఉంది. మందులు మరియు ఆహారంలో మార్పులు అవసరం.",
     urgency: "high",
     status: "open",
-    currentOwner: "u2",
-    currentOwnerName: "Dr. Arjun Mehta",
+    currentOwner: "usr_clin_kenneth",
+    currentOwnerName: "Dr. Kenneth Reynolds, MD",
     currentOwnerRole: "clinician",
     isQueueOwner: false,
-    nextAction: "Awaiting specialist acceptance for comprehensive endocrinology care plan",
+    nextAction: "Awaiting specialist endocrinology review for injectable GLP-1 therapy titration",
     nextActionDue: addDays(DEMO_BASE_DATE, 1),
-    steps: ahmedSteps,
+    steps: kavitaSteps,
     sideState: null,
     notifications: [
       {
         id: "notif-002-1",
         channel: "whatsapp",
-        to: "+1 (555) 912-3456",
-        message: "كيرلوب: مرحبًا أحمد، نتيجة فحص السكر التراكمي متاحة الآن على بوابتك الطبية.",
+        to: "+1 (555) 301-4455",
+        message: "CareLoop: నమస్కారం కవిత గారు, మీ HbA1c రక్త పరీక్ష ఫలితం సిద్ధంగా ఉంది.",
         status: "acknowledged",
-        sentAt: addHours(ahmedIssued, 4),
-        deliveredAt: addHours(ahmedIssued, 4.2),
-        acknowledgedAt: addDays(ahmedIssued, 1),
+        sentAt: addHours(kavitaIssued, 4),
+        deliveredAt: addHours(kavitaIssued, 4.2),
+        acknowledgedAt: addDays(kavitaIssued, 1),
         attemptNumber: 1,
       },
     ],
@@ -528,116 +432,106 @@ export const seedCases: Case[] = (() => {
         action: "Lab result issued",
         fromStep: undefined,
         toStep: "issued",
-        owner: "Northside Primary Care Lab",
+        owner: "Apex Health Family Medicine Lab",
         ownerRole: "clinician",
-        reason: "Routine quarterly HbA1c screening showed poor glycemic control.",
-        timestamp: ahmedIssued,
-      },
-      {
-        id: "aud-002-2",
-        caseId: "CASE-002",
-        action: "Referral submitted to Endocrinology",
-        fromStep: "confirmation",
-        toStep: "referral",
-        owner: "Dr. Arjun Mehta",
-        ownerRole: "clinician",
-        reason: "Patient needs GLP-1/SGLT2 dual escalation.",
-        timestamp: addDays(ahmedIssued, 4),
+        reason: "Quarterly HbA1c test flagged significant hyperglycemia.",
+        timestamp: kavitaIssued,
       },
     ],
     consults: [],
     referral: {
       caseId: "CASE-002",
       patientId: "P-1002",
-      patientName: "Ahmed Hassan",
+      patientName: "Kavita Reddy",
       resultSummary: "HbA1c 9.4%, Fasting Glucose 218 mg/dL",
-      history: "62yo male with 8-year history of Type 2 DM, BMI 31, currently on Metformin 1000mg BID.",
-      doneSoFar: "Confirmation lab complete; patient educated on signs of hypoglycemia.",
+      history: "59yo female with 7-year history of Type 2 DM, BMI 30, currently on Metformin 1000mg BID.",
+      doneSoFar: "Confirmation lab complete; patient educated on glycemic targets.",
       reasonForReferral: "Advanced diabetes care & injectable medication titration.",
       urgency: "high",
       specialtyRequired: "Endocrinology",
       status: "pending",
     },
     aiSuggestedNextStep: "Send reminder to Endocrinology triage desk to review pending referral within 24 hours.",
-    aiDelayRiskScore: 35,
-    createdAt: ahmedIssued,
+    aiDelayRiskScore: 32,
+    createdAt: kavitaIssued,
   });
 
-  // 3. SITA DESAI - Elevated BP (Direct Lifestyle/Medication Pathway - FULLY CLOSED WITH EVIDENCE)
-  const sitaIssued = addDays(DEMO_BASE_DATE, -12);
-  const sitaSteps = createPathwaySteps("Blood Pressure", sitaIssued, "Dr. Sneha Patil");
-  sitaSteps[1] = { ...sitaSteps[1], status: "completed", timestamp: addHours(sitaIssued, 2) };
-  sitaSteps[2] = { ...sitaSteps[2], status: "completed", timestamp: addHours(sitaIssued, 6) };
-  // steps 3, 4, 5 skipped per direct pathway
-  sitaSteps[6] = { ...sitaSteps[6], status: "completed", timestamp: addDays(sitaIssued, 2), note: "In-clinic BP recheck booked" };
-  sitaSteps[7] = { ...sitaSteps[7], status: "completed", timestamp: addDays(sitaIssued, 7), note: "Repeat BP 168/98 mmHg confirmed." };
-  sitaSteps[8] = { ...sitaSteps[8], status: "completed", timestamp: addDays(sitaIssued, 8), note: "Started Amlodipine 5mg daily + DASH diet education." };
-  sitaSteps[9] = {
-    ...sitaSteps[9],
+  // 3. MEERA SUNDARAM - Elevated BP (FULLY CLOSED WITH VERIFIED EVIDENCE)
+  const meeraIssued = addDays(DEMO_BASE_DATE, -12);
+  const meeraSteps = createPathwaySteps("Blood Pressure", meeraIssued, "Dr. Kenneth Reynolds, MD");
+  meeraSteps[1] = { ...meeraSteps[1], status: "completed", timestamp: addHours(meeraIssued, 2) };
+  meeraSteps[2] = { ...meeraSteps[2], status: "completed", timestamp: addHours(meeraIssued, 6) };
+  meeraSteps[6] = { ...meeraSteps[6], status: "completed", timestamp: addDays(meeraIssued, 2), note: "In-clinic BP recheck booked" };
+  meeraSteps[7] = { ...meeraSteps[7], status: "completed", timestamp: addDays(meeraIssued, 7), note: "Repeat BP 168/98 mmHg confirmed." };
+  meeraSteps[8] = { ...meeraSteps[8], status: "completed", timestamp: addDays(meeraIssued, 8), note: "Started Amlodipine 5mg daily + DASH diet plan." };
+  meeraSteps[9] = {
+    ...meeraSteps[9],
     status: "completed",
-    owner: "Dr. Sneha Patil",
+    owner: "Dr. Kenneth Reynolds, MD",
     ownerRole: "clinician",
-    timestamp: addDays(sitaIssued, 10),
-    note: "Loop closed. Follow-up BP 128/82 mmHg documented.",
+    timestamp: addDays(meeraIssued, 10),
+    note: "Loop closed. Follow-up BP stabilized at 124/80 mmHg documented.",
   };
 
   cases.push({
     id: "CASE-003",
+    organizationId: "org-apex",
+    department: "Cardiology",
     patientId: "P-1003",
-    patientName: "Sita Desai",
-    patientAge: 58,
+    patientName: "Meera Sundaram",
+    patientAge: 56,
     patientGender: "Female",
-    patientPhone: "+1 (555) 781-9922",
-    patientLanguage: "hi",
+    patientPhone: "+1 (555) 402-5566",
+    patientLanguage: "ta",
     program: "Hypertension Control Program",
-    facility: "East Valley Primary Care",
+    facility: "Apex Heart & Vascular Center",
     screeningType: "Blood Pressure",
     pathwayType: "lifestyle-medication",
     resultValue: "Stage 2 HTN: 172/102 mmHg",
-    resultInterpretation: "आपका ब्लड प्रेशर सामान्य से काफी अधिक है। समय पर दवा और देखभाल से दिल और गुर्दों को सुरक्षित रखा जा सकता है।",
+    resultInterpretation: "உங்கள் இரத்த அழுத்தம் இயல்பான அளவை விட அதிகமாக உள்ளது. உரிய மருத்துவ கவனிப்பு மூலம் கட்டுக்குள் கொண்டு வரலாம்.",
     urgency: "urgent",
     status: "closed",
-    currentOwner: "u6",
-    currentOwnerName: "Dr. Sneha Patil",
+    currentOwner: "usr_clin_kenneth",
+    currentOwnerName: "Dr. Kenneth Reynolds, MD",
     currentOwnerRole: "clinician",
     isQueueOwner: false,
     nextAction: "Loop Closed ✓ — Patient on maintenance surveillance (Next routine check in 3 months)",
     nextActionDue: addDays(DEMO_BASE_DATE, 60),
-    steps: sitaSteps,
+    steps: meeraSteps,
     sideState: null,
     notifications: [
       {
         id: "notif-003-1",
         channel: "sms",
-        to: "+1 (555) 781-9922",
-        message: "CareLoop: नमस्ते सीता जी, आपका बीपी परिणाम आ चुका है। कृपया अपने क्लिनिक से संपर्क करें।",
+        to: "+1 (555) 402-5566",
+        message: "CareLoop: வணக்கம் மீரா, உங்கள் இரத்த அழுத்த முடிவு உறுதி செய்யப்பட்டது. உங்கள் மருத்துவக் குழுவிற்கு நன்றி.",
         status: "acknowledged",
-        sentAt: addHours(sitaIssued, 2),
-        acknowledgedAt: addHours(sitaIssued, 6),
+        sentAt: addHours(meeraIssued, 2),
+        acknowledgedAt: addHours(meeraIssued, 6),
       },
     ],
     audit: [
       {
         id: "aud-003-1",
         caseId: "CASE-003",
-        action: "High BP recorded at community screening",
+        action: "High BP recorded at health screening",
         fromStep: undefined,
         toStep: "issued",
-        owner: "East Valley Mobile Van",
+        owner: "Apex Community Health Outreach",
         ownerRole: "coordinator",
         reason: "Initial reading 172/102 confirmed twice 5 minutes apart.",
-        timestamp: sitaIssued,
+        timestamp: meeraIssued,
       },
       {
         id: "aud-003-2",
         caseId: "CASE-003",
-        action: "Loop closed with verified evidence",
+        action: "Loop closed with verified clinical evidence",
         fromStep: "treatment",
         toStep: "closed",
-        owner: "Dr. Sneha Patil",
+        owner: "Dr. Kenneth Reynolds, MD",
         ownerRole: "clinician",
-        reason: "Patient responded to Amlodipine 5mg; 2-week follow-up BP 128/82 mmHg.",
-        timestamp: addDays(sitaIssued, 10),
+        reason: "Patient responded to Amlodipine 5mg; 2-week follow-up BP 124/80 mmHg documented.",
+        timestamp: addDays(meeraIssued, 10),
       },
     ],
     consults: [],
@@ -645,79 +539,81 @@ export const seedCases: Case[] = (() => {
       {
         type: "treatment-started",
         description: "Initiated Amlodipine 5mg daily. Verified pharmacy dispensing and adherence.",
-        attachedBy: "u6",
-        attachedByName: "Dr. Sneha Patil",
-        attachedAt: addDays(sitaIssued, 8),
+        attachedBy: "usr_clin_kenneth",
+        attachedByName: "Dr. Kenneth Reynolds, MD",
+        attachedAt: addDays(meeraIssued, 8),
       },
       {
         type: "appointment-attended",
-        description: "Clinic follow-up attended on Oct 18. Vital signs stabilized at 128/82 mmHg.",
-        attachedBy: "u6",
-        attachedByName: "Dr. Sneha Patil",
-        attachedAt: addDays(sitaIssued, 10),
+        description: "Clinic follow-up attended on Oct 18. Vital signs stabilized at 124/80 mmHg.",
+        attachedBy: "usr_clin_kenneth",
+        attachedByName: "Dr. Kenneth Reynolds, MD",
+        attachedAt: addDays(meeraIssued, 10),
       },
       {
         type: "surveillance-plan",
-        description: "Enrolled in East Valley Home BP monitoring cohort. Quarterly nurse check-in scheduled.",
-        attachedBy: "u6",
-        attachedByName: "Dr. Sneha Patil",
-        attachedAt: addDays(sitaIssued, 10),
+        description: "Enrolled in Apex Home BP monitoring program. Quarterly nurse check-in scheduled.",
+        attachedBy: "usr_clin_kenneth",
+        attachedByName: "Dr. Kenneth Reynolds, MD",
+        attachedAt: addDays(meeraIssued, 10),
       },
     ],
-    closedBy: "u6",
-    closedByName: "Dr. Sneha Patil",
-    closedAt: addDays(sitaIssued, 10),
-    closureReason: "Clinical goal achieved: Blood pressure brought under target with documented medication compliance and follow-up.",
+    closedBy: "usr_clin_kenneth",
+    closedByName: "Dr. Kenneth Reynolds, MD",
+    closedAt: addDays(meeraIssued, 10),
+    closureReason: "Clinical goal achieved: Blood pressure stabilized under 130/85 with verified medication and follow-up.",
     understandingScore: 5,
     confidenceScore: 5,
-    createdAt: sitaIssued,
+    createdAt: meeraIssued,
   });
 
-  // 4. JAMES OKONKWO - Positive FIT (Rejected Referral Case)
-  const jamesIssued = addDays(DEMO_BASE_DATE, -8);
-  const jamesSteps = createPathwaySteps("FIT / Colon Cancer", jamesIssued, "Carlos Mendez");
-  jamesSteps[1] = { ...jamesSteps[1], status: "completed", timestamp: addHours(jamesIssued, 2) };
-  jamesSteps[2] = { ...jamesSteps[2], status: "completed", timestamp: addDays(jamesIssued, 1) };
-  jamesSteps[4] = { ...jamesSteps[4], status: "completed", timestamp: addDays(jamesIssued, 3) }; // referral sent
-  jamesSteps[5] = {
-    ...jamesSteps[5],
+  // 4. RAJESH PATEL - Positive FIT (Rejected Referral Case requiring prior-auth)
+  const rajeshIssued = addDays(DEMO_BASE_DATE, -8);
+  const rajeshSteps = createPathwaySteps("FIT / Colon Cancer", rajeshIssued, "Sarah Thompson, BSN, RN");
+  rajeshSteps[1] = { ...rajeshSteps[1], status: "completed", timestamp: addHours(rajeshIssued, 2) };
+  rajeshSteps[2] = { ...rajeshSteps[2], status: "completed", timestamp: addDays(rajeshIssued, 1) };
+  rajeshSteps[4] = { ...rajeshSteps[4], status: "completed", timestamp: addDays(rajeshIssued, 3) };
+  rajeshSteps[5] = {
+    ...rajeshSteps[5],
     status: "overdue",
-    dueAt: addDays(jamesIssued, 5),
-    note: "Referral rejected by Metro Endoscopy Suite: Requires pre-authorization letter and renal panel.",
+    dueAt: addDays(rajeshIssued, 5),
+    note: "Referral rejected by Endoscopy Suite: Requires insurance pre-authorization documentation.",
   };
 
   cases.push({
     id: "CASE-004",
+    organizationId: "org-apex",
+    department: "Oncology",
     patientId: "P-1004",
-    patientName: "James Okonkwo",
-    patientAge: 56,
+    patientName: "Rajesh Patel",
+    patientAge: 61,
     patientGender: "Male",
-    patientPhone: "+1 (555) 345-0987",
-    patientLanguage: "en",
+    patientPhone: "+1 (555) 503-6677",
+    patientLanguage: "hi",
     program: "Cancer Screening Program",
-    facility: "South County Community Health",
+    facility: "Apex Cancer Institute",
     screeningType: "FIT / Colon Cancer",
     pathwayType: "endoscopy-referral",
     resultValue: "Positive Occult Blood (FIT 180 ug Hb/g feces)",
-    resultInterpretation: "The stool test detected traces of blood. This is not a cancer diagnosis, but a diagnostic colonoscopy is required to safely evaluate the source.",
+    resultInterpretation: "मैल जांच में सूक्ष्म खून के अंश मिले हैं। पूरी सुरक्षा के लिए कोलोनोस्कोपी जांच आवश्यक है।",
     urgency: "urgent",
     status: "open",
-    currentOwner: "u7",
-    currentOwnerName: "Carlos Mendez",
+    currentOwner: "usr_coord_sarah",
+    currentOwnerName: "Sarah Thompson, BSN, RN",
     currentOwnerRole: "coordinator",
     isQueueOwner: false,
-    nextAction: "Referral rejected: Obtain prior authorization form & resubmit to alternate endoscopy partner",
+    nextAction: "Referral rejected: Complete insurance pre-authorization form and route to secondary endoscopy slot",
     nextActionDue: addDays(DEMO_BASE_DATE, -1),
-    steps: jamesSteps,
+    steps: rajeshSteps,
     sideState: "rejected",
     notifications: [
       {
         id: "notif-004-1",
         channel: "sms",
-        to: "+1 (555) 345-0987",
-        message: "CareLoop: Your FIT screening returned positive. Our care team is coordinating your colonoscopy.",
+        to: "+1 (555) 503-6677",
+        message: "CareLoop: राजेश जी, आपकी FIT जांच रिपोर्ट उपलब्ध है। हमारी टीम कोलोनोस्कोपी की तैयारी कर रही है।",
         status: "read",
-        sentAt: addHours(jamesIssued, 2),
+        sentAt: addHours(rajeshIssued, 2),
       },
     ],
     audit: [
@@ -727,59 +623,61 @@ export const seedCases: Case[] = (() => {
         action: "Referral rejected by receiving specialist",
         fromStep: "referral",
         toStep: "referral",
-        owner: "Metro Endoscopy Scheduling",
+        owner: "Endoscopy Scheduling Desk",
         ownerRole: "specialist",
-        reason: "Procedure rejected: Lacks HMO prior authorization code and recent serum creatinine.",
-        timestamp: addDays(jamesIssued, 5),
+        reason: "Procedure rejected: Missing HMO prior-authorization approval code.",
+        timestamp: addDays(rajeshIssued, 5),
       },
     ],
     consults: [],
     referral: {
       caseId: "CASE-004",
       patientId: "P-1004",
-      patientName: "James Okonkwo",
+      patientName: "Rajesh Patel",
       resultSummary: "Positive FIT (180 ug/g)",
-      history: "56yo male, father had colon polyps at age 60, no prior colonoscopy.",
+      history: "61yo male, family history of benign polyps, no prior colonoscopy.",
       doneSoFar: "FIT completed; patient advised on prep.",
       reasonForReferral: "Diagnostic colonoscopy for positive fecal immunochemical screening.",
       urgency: "urgent",
       specialtyRequired: "Gastroenterology",
       status: "rejected",
-      rejectReason: "Endoscopy schedule full & missing insurance pre-authorization documentation.",
+      rejectReason: "Missing insurance pre-authorization documentation.",
     },
-    aiSuggestedNextStep: "Trigger instant re-referral packet to Valley Gastro Group with attached pre-auth template.",
-    aiDelayRiskScore: 92,
+    aiSuggestedNextStep: "Trigger instant re-referral packet to Apex Endoscopy with attached expedited pre-authorization form.",
+    aiDelayRiskScore: 89,
     delayReasonPrimary: "Referral rejected",
-    createdAt: jamesIssued,
+    createdAt: rajeshIssued,
   });
 
-  // 5. PRIYA NAIR - Abnormal Pap Smear (UNASSIGNED Case in Triage Queue)
-  const priyaIssued = addDays(DEMO_BASE_DATE, -2);
-  const priyaSteps = createPathwaySteps("Pap Smear", priyaIssued, "Central Cytology Lab");
+  // 5. SUNITA DESHMUKH - Abnormal Pap Smear (UNASSIGNED Case in Triage Queue)
+  const sunitaIssued = addDays(DEMO_BASE_DATE, -2);
+  const sunitaSteps = createPathwaySteps("Pap Smear", sunitaIssued, "Central Cytology Lab");
 
   cases.push({
     id: "CASE-005",
+    organizationId: "org-apex",
+    department: "Women's Health",
     patientId: "P-1005",
-    patientName: "Priya Nair",
-    patientAge: 34,
+    patientName: "Sunita Deshmukh",
+    patientAge: 38,
     patientGender: "Female",
-    patientPhone: "+1 (555) 671-8833",
-    patientLanguage: "en",
+    patientPhone: "+1 (555) 604-7788",
+    patientLanguage: "mr",
     program: "Women's Health Program",
-    facility: "City General Hospital",
+    facility: "Apex Ambulatory Pavilion",
     screeningType: "Pap Smear",
     pathwayType: "biopsy-referral",
     resultValue: "ASC-US with high-risk HPV positive",
-    resultInterpretation: "Your Pap smear showed mild cellular changes along with HPV. This is very common and usually clears with minor treatment, but needs colposcopy follow-up.",
+    resultInterpretation: "तपासणीत पेशींमध्ये सौम्य बदल आढळले आहेत. प्रतिबंधात्मक खबरदारी म्हणून कोलपोस्कोपी तपासणी करणे योग्य ठरेल.",
     urgency: "high",
     status: "open",
-    currentOwner: "queue-cancer", // Accountable triage queue!
+    currentOwner: "queue-cancer",
     currentOwnerName: "Triage Queue - Cancer Screening",
     currentOwnerRole: "triage-queue",
     isQueueOwner: true,
-    nextAction: "Unassigned case: Triage supervisor must assign dedicated coordinator within SLA",
+    nextAction: "Unassigned case: Department coordinator must be assigned to start patient navigation within SLA",
     nextActionDue: addDays(DEMO_BASE_DATE, 0),
-    steps: priyaSteps,
+    steps: sunitaSteps,
     sideState: "unassigned",
     notifications: [],
     audit: [
@@ -789,22 +687,21 @@ export const seedCases: Case[] = (() => {
         action: "Abnormal result entered triage queue",
         fromStep: undefined,
         toStep: "issued",
-        owner: "Central Cytology Lab",
+        owner: "Apex Cytology Lab",
         ownerRole: "system",
         reason: "Electronic lab HL7 feed ingested abnormal cervical cytology result.",
-        timestamp: priyaIssued,
+        timestamp: sunitaIssued,
       },
     ],
     consults: [],
-    aiSuggestedNextStep: "Assign immediately to Care Coordinator Riya Sharma based on current capacity.",
-    aiDelayRiskScore: 68,
-    delayReasonPrimary: "Language barrier",
-    createdAt: priyaIssued,
+    aiSuggestedNextStep: "Assign case to Care Coordinator Sarah Thompson based on department capacity.",
+    aiDelayRiskScore: 65,
+    createdAt: sunitaIssued,
   });
 
-  // 6. BABY AL-MANSOURI - Newborn Hearing Screen (Repeat Screen Pathway - FULLY CLOSED)
+  // 6. BABY AARAV NAIR - Newborn Hearing Screen (Repeat Screen Pathway - FULLY CLOSED)
   const babyIssued = addDays(DEMO_BASE_DATE, -20);
-  const babySteps = createPathwaySteps("Newborn Hearing Screen", babyIssued, "Maternity Ward Audiology");
+  const babySteps = createPathwaySteps("Newborn Hearing Screen", babyIssued, "Apex Maternity Audiology");
   babySteps[1] = { ...babySteps[1], status: "completed", timestamp: addHours(babyIssued, 3) };
   babySteps[2] = { ...babySteps[2], status: "completed", timestamp: addHours(babyIssued, 8) };
   babySteps[3] = { ...babySteps[3], status: "completed", timestamp: addDays(babyIssued, 10), note: "Repeat ABR test passed bilaterally at 30 dB nHL." };
@@ -812,27 +709,29 @@ export const seedCases: Case[] = (() => {
   babySteps[5] = { ...babySteps[5], status: "skipped" };
   babySteps[6] = { ...babySteps[6], status: "skipped" };
   babySteps[7] = { ...babySteps[7], status: "completed", timestamp: addDays(babyIssued, 10) };
-  babySteps[8] = { ...babySteps[8], status: "completed", timestamp: addDays(babyIssued, 12), note: "Developmental surveillance plan established." };
-  babySteps[9] = { ...babySteps[9], status: "completed", owner: "Riya Sharma", ownerRole: "coordinator", timestamp: addDays(babyIssued, 14) };
+  babySteps[8] = { ...babySteps[8], status: "completed", timestamp: addDays(babyIssued, 12), note: "Developmental milestone surveillance plan established." };
+  babySteps[9] = { ...babySteps[9], status: "completed", owner: "Sarah Thompson, BSN, RN", ownerRole: "coordinator", timestamp: addDays(babyIssued, 14) };
 
   cases.push({
     id: "CASE-006",
+    organizationId: "org-apex",
+    department: "Primary Care",
     patientId: "P-1006",
-    patientName: "Baby Al-Mansouri",
+    patientName: "Baby Aarav Nair",
     patientAge: 0,
     patientGender: "Male",
-    patientPhone: "+1 (555) 888-2341",
-    patientLanguage: "ar",
+    patientPhone: "+1 (555) 705-8899",
+    patientLanguage: "en",
     program: "Maternal & Child Health",
-    facility: "City General Hospital",
+    facility: "Apex Maternal & Child Health",
     screeningType: "Newborn Hearing Screen",
     pathwayType: "repeat-screen",
     resultValue: "Refer (Unilateral - Right Ear)",
-    resultInterpretation: "The newborn screen did not record a clear signal in the right ear. This is very common right after birth due to fluid. A repeat screen confirmed normal hearing.",
+    resultInterpretation: "The newborn screen did not record a clear signal in the right ear initially due to fluid. Repeat test confirmed 100% normal hearing.",
     urgency: "routine",
     status: "closed",
-    currentOwner: "u1",
-    currentOwnerName: "Riya Sharma",
+    currentOwner: "usr_coord_sarah",
+    currentOwnerName: "Sarah Thompson, BSN, RN",
     currentOwnerRole: "coordinator",
     isQueueOwner: false,
     nextAction: "Loop Closed ✓ — Surveillance plan documented for 6-month developmental milestone check",
@@ -842,9 +741,9 @@ export const seedCases: Case[] = (() => {
     notifications: [
       {
         id: "notif-006-1",
-        channel: "whatsapp",
-        to: "+1 (555) 888-2341",
-        message: "CareLoop: تم إغلاق ملف متابعة السمع لطفلك بنجاح بعد التأكد من سلامة السمع تمامًا.",
+        channel: "sms",
+        to: "+1 (555) 705-8899",
+        message: "CareLoop: Hearing check loop successfully completed for Baby Aarav Nair. Both ears confirmed normal.",
         status: "acknowledged",
         sentAt: addDays(babyIssued, 14),
       },
@@ -856,7 +755,7 @@ export const seedCases: Case[] = (() => {
         action: "Repeat screen passed & loop closed",
         fromStep: "treatment",
         toStep: "closed",
-        owner: "Riya Sharma",
+        owner: "Sarah Thompson, BSN, RN",
         ownerRole: "coordinator",
         reason: "Repeat outpatient audiology screening passed in both ears with 100% normal waveforms.",
         timestamp: addDays(babyIssued, 14),
@@ -867,13 +766,13 @@ export const seedCases: Case[] = (() => {
       {
         type: "surveillance-plan",
         description: "Repeat ABR test passed in both ears. Pediatric developmental monitoring at 6-month well-child visit.",
-        attachedBy: "u1",
-        attachedByName: "Riya Sharma",
+        attachedBy: "usr_coord_sarah",
+        attachedByName: "Sarah Thompson, BSN, RN",
         attachedAt: addDays(babyIssued, 14),
       },
     ],
-    closedBy: "u1",
-    closedByName: "Riya Sharma",
+    closedBy: "usr_coord_sarah",
+    closedByName: "Sarah Thompson, BSN, RN",
     closedAt: addDays(babyIssued, 14),
     closureReason: "Repeat screening resolved anomaly; infant hearing confirmed normal.",
     understandingScore: 5,
@@ -881,44 +780,46 @@ export const seedCases: Case[] = (() => {
     createdAt: babyIssued,
   });
 
-  // 7. ROBERT CHEN - Elevated Lipid Panel (Overdue Case)
-  const robertIssued = addDays(DEMO_BASE_DATE, -6);
-  const robertSteps = createPathwaySteps("Lipid Panel", robertIssued, "Dr. Sneha Patil");
-  robertSteps[1] = { ...robertSteps[1], status: "completed", timestamp: addHours(robertIssued, 3) };
-  robertSteps[2] = { ...robertSteps[2], status: "overdue", dueAt: addHours(robertIssued, 75) };
+  // 7. VIKRAM SENGUPTA - Elevated Lipid Panel (Overdue Case)
+  const vikramIssued = addDays(DEMO_BASE_DATE, -6);
+  const vikramSteps = createPathwaySteps("Lipid Panel", vikramIssued, "Dr. Kenneth Reynolds, MD");
+  vikramSteps[1] = { ...vikramSteps[1], status: "completed", timestamp: addHours(vikramIssued, 3) };
+  vikramSteps[2] = { ...vikramSteps[2], status: "overdue", dueAt: addHours(vikramIssued, 75) };
 
   cases.push({
     id: "CASE-007",
+    organizationId: "org-apex",
+    department: "Cardiology",
     patientId: "P-1007",
-    patientName: "Robert Chen",
-    patientAge: 49,
+    patientName: "Vikram Sengupta",
+    patientAge: 50,
     patientGender: "Male",
-    patientPhone: "+1 (555) 443-8910",
+    patientPhone: "+1 (555) 806-9900",
     patientLanguage: "en",
     program: "Cardiovascular Risk Prevention",
-    facility: "Northside Primary Care",
+    facility: "Apex Heart & Vascular Center",
     screeningType: "Lipid Panel",
     pathwayType: "lifestyle-medication",
     resultValue: "LDL-C 194 mg/dL, Triglycerides 280 mg/dL",
     resultInterpretation: "Your bad cholesterol (LDL) is very high, putting extra strain on your blood vessels. Medication and dietary adjustments are recommended.",
     urgency: "high",
     status: "open",
-    currentOwner: "u6",
-    currentOwnerName: "Dr. Sneha Patil",
+    currentOwner: "usr_clin_kenneth",
+    currentOwnerName: "Dr. Kenneth Reynolds, MD",
     currentOwnerRole: "clinician",
     isQueueOwner: false,
-    nextAction: "Overdue acknowledgement: Nudge patient via WhatsApp / phone call to initiate statin therapy",
+    nextAction: "Overdue acknowledgement: Nudge patient via WhatsApp / phone outreach to discuss statin therapy",
     nextActionDue: addDays(DEMO_BASE_DATE, -2),
-    steps: robertSteps,
+    steps: vikramSteps,
     sideState: "overdue",
     notifications: [
       {
         id: "notif-007-1",
         channel: "sms",
-        to: "+1 (555) 443-8910",
+        to: "+1 (555) 806-9900",
         message: "CareLoop: Your lipid panel results are ready. Please review in your patient portal.",
         status: "delivered",
-        sentAt: addHours(robertIssued, 3),
+        sentAt: addHours(vikramIssued, 3),
       },
     ],
     audit: [
@@ -931,60 +832,62 @@ export const seedCases: Case[] = (() => {
         owner: "CareLoop SLA Engine",
         ownerRole: "system",
         reason: "Patient has not accessed portal or acknowledged result within 72h SLA.",
-        timestamp: addDays(robertIssued, 3),
+        timestamp: addDays(vikramIssued, 3),
       },
     ],
     consults: [],
     aiSuggestedNextStep: "Send automated WhatsApp nudge and queue outreach callback.",
-    aiDelayRiskScore: 74,
+    aiDelayRiskScore: 76,
     delayReasonPrimary: "Fear / anxiety",
-    createdAt: robertIssued,
+    createdAt: vikramIssued,
   });
 
-  // 8. FATIMA AL-SAYED - Lung Nodule CT (Accepted Referral, Appointment Attended)
-  const fatimaIssued = addDays(DEMO_BASE_DATE, -11);
-  const fatimaSteps = createPathwaySteps("Lung Nodule CT", fatimaIssued, "Dr. David Okoro");
-  fatimaSteps[1] = { ...fatimaSteps[1], status: "completed", timestamp: addHours(fatimaIssued, 3) };
-  fatimaSteps[2] = { ...fatimaSteps[2], status: "completed", timestamp: addDays(fatimaIssued, 1) };
-  fatimaSteps[3] = { ...fatimaSteps[3], status: "completed", timestamp: addDays(fatimaIssued, 3), note: "High-resolution thin slice CT confirmed 8mm solid nodule in right middle lobe." };
-  fatimaSteps[4] = { ...fatimaSteps[4], status: "completed", timestamp: addDays(fatimaIssued, 4) };
-  fatimaSteps[5] = { ...fatimaSteps[5], status: "completed", owner: "Dr. David Okoro", timestamp: addDays(fatimaIssued, 5) };
-  fatimaSteps[6] = { ...fatimaSteps[6], status: "completed", timestamp: addDays(fatimaIssued, 6) };
-  fatimaSteps[7] = { ...fatimaSteps[7], status: "completed", owner: "Dr. David Okoro", timestamp: addDays(fatimaIssued, 9), note: "Pulmonology consult attended. Low clinical probability of malignancy." };
-  fatimaSteps[8] = { ...fatimaSteps[8], status: "in-progress", dueAt: addDays(fatimaIssued, 14) };
+  // 8. FARIDA KHAN - Lung Nodule CT (Accepted Referral, Appointment Attended)
+  const faridaIssued = addDays(DEMO_BASE_DATE, -11);
+  const faridaSteps = createPathwaySteps("Lung Nodule CT", faridaIssued, "Dr. Maya Lin, MD, FACS");
+  faridaSteps[1] = { ...faridaSteps[1], status: "completed", timestamp: addHours(faridaIssued, 3) };
+  faridaSteps[2] = { ...faridaSteps[2], status: "completed", timestamp: addDays(faridaIssued, 1) };
+  faridaSteps[3] = { ...faridaSteps[3], status: "completed", timestamp: addDays(faridaIssued, 3), note: "High-resolution thin slice CT confirmed 8mm solid nodule in right middle lobe." };
+  faridaSteps[4] = { ...faridaSteps[4], status: "completed", timestamp: addDays(faridaIssued, 4) };
+  faridaSteps[5] = { ...faridaSteps[5], status: "completed", owner: "Dr. Maya Lin, MD, FACS", timestamp: addDays(faridaIssued, 5) };
+  faridaSteps[6] = { ...faridaSteps[6], status: "completed", timestamp: addDays(faridaIssued, 6) };
+  faridaSteps[7] = { ...faridaSteps[7], status: "completed", owner: "Dr. Maya Lin, MD, FACS", timestamp: addDays(faridaIssued, 9), note: "Pulmonology consult attended. Low clinical probability of malignancy." };
+  faridaSteps[8] = { ...faridaSteps[8], status: "in-progress", dueAt: addDays(faridaIssued, 14) };
 
   cases.push({
     id: "CASE-008",
+    organizationId: "org-apex",
+    department: "Oncology",
     patientId: "P-1008",
-    patientName: "Fatima Al-Sayed",
-    patientAge: 61,
+    patientName: "Farida Khan",
+    patientAge: 63,
     patientGender: "Female",
-    patientPhone: "+1 (555) 772-1109",
-    patientLanguage: "ar",
+    patientPhone: "+1 (555) 907-0011",
+    patientLanguage: "hi",
     program: "Cancer Screening Program",
-    facility: "Metro Oncology Center",
+    facility: "Apex Cancer Institute",
     screeningType: "Lung Nodule CT",
     pathwayType: "biopsy-referral",
     resultValue: "8mm non-calcified solid nodule, right middle lobe",
-    resultInterpretation: "A small spot was detected on your lung scan. Most nodules are harmless scars from past infections, but surveillance is required.",
+    resultInterpretation: "फेफड़े के स्कैन में एक छोटा निशान दिखा है। 3 से 6 महीने में दोबारा हल्के स्कैन से इसकी स्थिरता जांची जाएगी।",
     urgency: "high",
     status: "open",
-    currentOwner: "u8",
-    currentOwnerName: "Dr. David Okoro",
+    currentOwner: "usr_spec_maya",
+    currentOwnerName: "Dr. Maya Lin, MD, FACS",
     currentOwnerRole: "specialist",
     isQueueOwner: false,
-    nextAction: "Document 3-month follow-up CT surveillance order and sign off closure evidence",
+    nextAction: "Document 3-month follow-up CT surveillance order and complete case closure proof",
     nextActionDue: addDays(DEMO_BASE_DATE, 3),
-    steps: fatimaSteps,
+    steps: faridaSteps,
     sideState: null,
     notifications: [
       {
         id: "notif-008-1",
         channel: "sms",
-        to: "+1 (555) 772-1109",
-        message: "كيرلوب: تم تأكيد موعدك مع د. ديفيد أوكورو يوم الإثنين القادم.",
+        to: "+1 (555) 907-0011",
+        message: "CareLoop: आपके फेफड़े के स्कैन की समीक्षा डॉ. माया लिन द्वारा पूरी कर ली गई है।",
         status: "acknowledged",
-        sentAt: addDays(fatimaIssued, 6),
+        sentAt: addDays(faridaIssued, 6),
       },
     ],
     audit: [
@@ -994,49 +897,49 @@ export const seedCases: Case[] = (() => {
         action: "Referral accepted by Specialist",
         fromStep: "referral",
         toStep: "accepted",
-        owner: "Dr. David Okoro",
+        owner: "Dr. Maya Lin, MD, FACS",
         ownerRole: "specialist",
         reason: "Accepted for Fleischer society guideline surveillance protocol.",
-        timestamp: addDays(fatimaIssued, 5),
+        timestamp: addDays(faridaIssued, 5),
       },
     ],
     consults: [],
     referral: {
       caseId: "CASE-008",
       patientId: "P-1008",
-      patientName: "Fatima Al-Sayed",
+      patientName: "Farida Khan",
       resultSummary: "8mm solid non-calcified nodule on low-dose chest CT",
-      history: "61yo female, former light smoker (10 pack-years, quit 15 years ago).",
+      history: "63yo female, former light smoker (10 pack-years, quit 15 years ago).",
       doneSoFar: "Diagnostic chest CT complete; clinical consult completed.",
       reasonForReferral: "Pulmonology evaluation and 3-month follow-up interval imaging protocol.",
       urgency: "high",
       specialtyRequired: "Pulmonology",
       status: "accepted",
-      acceptedBy: "u8",
-      acceptedByName: "Dr. David Okoro",
-      acceptedAt: addDays(fatimaIssued, 5),
+      acceptedBy: "usr_spec_maya",
+      acceptedByName: "Dr. Maya Lin, MD, FACS",
+      acceptedAt: addDays(faridaIssued, 5),
     },
     aiSuggestedNextStep: "Attach Fleischer surveillance protocol note and complete case closure.",
-    aiDelayRiskScore: 20,
-    createdAt: fatimaIssued,
+    aiDelayRiskScore: 22,
+    createdAt: faridaIssued,
   });
 
-  // FILLER CASES 9 TO 50 (Deterministic, Diverse, Statistically balanced)
-  const patientProfiles = [
-    { name: "Ananya Sharma", age: 46, gender: "Female" as const, lang: "hi" as const, phone: "+1 (555) 901-1122" },
-    { name: "Miguel Ramirez", age: 52, gender: "Male" as const, lang: "es" as const, phone: "+1 (555) 902-2233" },
-    { name: "Zainab Al-Farsi", age: 39, gender: "Female" as const, lang: "ar" as const, phone: "+1 (555) 903-3344" },
-    { name: "Sunil Kadam", age: 64, gender: "Male" as const, lang: "mr" as const, phone: "+1 (555) 904-4455" },
-    { name: "Sarah Jenkins", age: 41, gender: "Female" as const, lang: "en" as const, phone: "+1 (555) 905-5566" },
-    { name: "Kavita Rao", age: 50, gender: "Female" as const, lang: "hi" as const, phone: "+1 (555) 906-6677" },
-    { name: "Baby Noah Campbell", age: 0, gender: "Male" as const, lang: "en" as const, phone: "+1 (555) 907-7788" },
-    { name: "Elena Rostova", age: 67, gender: "Female" as const, lang: "en" as const, phone: "+1 (555) 908-8899" },
-    { name: "Tariq Mansoor", age: 58, gender: "Male" as const, lang: "ar" as const, phone: "+1 (555) 909-9900" },
-    { name: "Deepak Joshi", age: 48, gender: "Male" as const, lang: "mr" as const, phone: "+1 (555) 910-0011" },
-    { name: "Alejandro Morales", age: 63, gender: "Male" as const, lang: "es" as const, phone: "+1 (555) 911-1122" },
-    { name: "Pooja Hegde", age: 32, gender: "Female" as const, lang: "hi" as const, phone: "+1 (555) 912-2233" },
-    { name: "Arthur Pendelton", age: 72, gender: "Male" as const, lang: "en" as const, phone: "+1 (555) 913-3344" },
-    { name: "Nadia Nour", age: 44, gender: "Female" as const, lang: "ar" as const, phone: "+1 (555) 914-4455" },
+  // CASES 9 TO 50 (Deterministic, diverse patients and multi-tenant distribution)
+  const patientProfiles: { name: string; age: number; gender: "Female" | "Male" | "Other"; lang: Lang; phone: string }[] = [
+    { name: "Kavita Rao", age: 48, gender: "Female", lang: "hi", phone: "+1 (555) 901-1122" },
+    { name: "Suresh Nair", age: 53, gender: "Male", lang: "ta", phone: "+1 (555) 902-2233" },
+    { name: "Deepak Joshi", age: 46, gender: "Male", lang: "mr", phone: "+1 (555) 903-3344" },
+    { name: "Lakshmi Raman", age: 58, gender: "Female", lang: "ta", phone: "+1 (555) 904-4455" },
+    { name: "Sarah Jenkins", age: 41, gender: "Female", lang: "en", phone: "+1 (555) 905-5566" },
+    { name: "Gautam Verma", age: 62, gender: "Male", lang: "hi", phone: "+1 (555) 906-6677" },
+    { name: "Swati Kulkarni", age: 39, gender: "Female", lang: "mr", phone: "+1 (555) 907-7788" },
+    { name: "Arun Varma", age: 67, gender: "Male", lang: "te", phone: "+1 (555) 908-8899" },
+    { name: "Nandini Iyer", age: 44, gender: "Female", lang: "ta", phone: "+1 (555) 909-9900" },
+    { name: "Manoj Patil", age: 51, gender: "Male", lang: "mr", phone: "+1 (555) 910-0011" },
+    { name: "Pooja Hegde", age: 34, gender: "Female", lang: "te", phone: "+1 (555) 911-1122" },
+    { name: "Arthur Pendelton", age: 72, gender: "Male", lang: "en", phone: "+1 (555) 912-2233" },
+    { name: "Sunil Kadam", age: 64, gender: "Male", lang: "mr", phone: "+1 (555) 913-3344" },
+    { name: "Kiran Murthy", age: 49, gender: "Male", lang: "te", phone: "+1 (555) 914-4455" },
   ];
 
   const screeningCycle = [
@@ -1051,22 +954,31 @@ export const seedCases: Case[] = (() => {
   ];
 
   const facilities = [
-    "City General Hospital",
-    "Northside Primary Care",
-    "Metro Oncology Center",
-    "Heart & Vascular Institute",
-    "East Valley Primary Care",
-    "South County Community Health",
+    "Apex Cancer Institute",
+    "Apex Health Family Medicine Center",
+    "Apex Heart & Vascular Center",
+    "Apex Ambulatory Pavilion",
+    "Apex Maternal & Child Health",
   ];
 
   const delayReasons = [
     "No contact / unreachable",
-    "Transport / cost",
+    "Transport / distance barrier",
     "Referral rejected",
-    "Language barrier",
+    "Language navigation required",
     "Fear / anxiety",
-    "Patient declined",
+    "Patient declined procedure",
     "Pre-authorization pending",
+  ];
+
+  // Assigned real clinical staff pool
+  const staffPool: { id: string; name: string; role: Role; orgId: string }[] = [
+    { id: "usr_coord_sarah", name: "Sarah Thompson, BSN, RN", role: "coordinator", orgId: "org-apex" },
+    { id: "usr_clin_kenneth", name: "Dr. Kenneth Reynolds, MD", role: "clinician", orgId: "org-apex" },
+    { id: "usr_spec_maya", name: "Dr. Maya Lin, MD, FACS", role: "specialist", orgId: "org-apex" },
+    { id: "usr_hod_oncology", name: "Dr. Robert Vance, MD", role: "hod", orgId: "org-apex" },
+    // A few cases assigned to Metro Health to demonstrate multi-tenant isolation
+    { id: "usr_coord_jessica", name: "Jessica Taylor, RN", role: "coordinator", orgId: "org-metro" },
   ];
 
   for (let i = 8; i < 50; i++) {
@@ -1077,7 +989,13 @@ export const seedCases: Case[] = (() => {
     const config = screeningConfigs[screeningType];
     const facility = facilities[i % facilities.length];
 
-    // Determine state distribution
+    // Assign to Metro Health every 6th case for multi-tenancy verification, else Apex Health
+    const isMetro = i % 6 === 0;
+    const organizationId = isMetro ? "org-metro" : "org-apex";
+    const assignedStaff = isMetro
+      ? staffPool[4] // Jessica Taylor
+      : staffPool[i % (staffPool.length - 1)];
+
     let status: "open" | "closed" = "open";
     let sideState: SideState = null;
     let urgency: Urgency = (i % 5 === 0) ? "urgent" : (i % 3 === 0) ? "high" : "routine";
@@ -1086,28 +1004,28 @@ export const seedCases: Case[] = (() => {
     let closedAt: string | undefined;
     let closureEvidence: ClosureEvidence[] | undefined;
     let referral: Case["referral"];
-    let ownerId = allUsers[i % allUsers.length].id;
-    let ownerRole: Role | "triage-queue" = allUsers[i % allUsers.length].role;
+    let ownerId = assignedStaff.id;
+    let ownerName = assignedStaff.name;
+    let ownerRole: Role | "triage-queue" = assignedStaff.role;
     let isQueue = false;
     let daysAgo = 2 + (i % 18);
     const issuedAt = addDays(DEMO_BASE_DATE, -daysAgo);
-    let nextAction = "Review screening findings and confirm outreach";
+    let nextAction = "Review screening findings and confirm patient outreach";
     let nextActionDue = addDays(DEMO_BASE_DATE, (i % 4) - 1);
     let delayReason: string | undefined = delayReasons[i % delayReasons.length];
 
-    // Specific deterministic distributions:
     if (i % 7 === 0) {
       // Fully closed
       status = "closed";
       sideState = null;
       closedBy = ownerId;
-      closedByName = allUsers[i % allUsers.length].name;
+      closedByName = ownerName;
       closedAt = addDays(DEMO_BASE_DATE, -1);
-      nextAction = "Loop Closed ✓ — Patient entered into maintenance care protocol";
+      nextAction = "Loop Closed ✓ — Patient enrolled in maintenance surveillance";
       closureEvidence = [
         {
           type: "appointment-attended",
-          description: "Follow-up clinical consultation documented with clear management plan.",
+          description: "Clinical consultation attended with documented care management plan.",
           attachedBy: ownerId,
           attachedByName: closedByName,
           attachedAt: closedAt,
@@ -1118,6 +1036,7 @@ export const seedCases: Case[] = (() => {
       // Unassigned in Triage Queue
       sideState = "unassigned";
       ownerId = config.queueId;
+      ownerName = config.queueName;
       ownerRole = "triage-queue";
       isQueue = true;
       nextAction = `Awaiting coordinator assignment from ${config.queueName}`;
@@ -1144,23 +1063,13 @@ export const seedCases: Case[] = (() => {
         rejectReason: "Provider panel closed for routine bookings; re-route to secondary network.",
       };
     } else if (i % 17 === 0) {
-      // Escalated
       sideState = "escalated";
       urgency = "urgent";
-      nextAction = "High-risk flag: Multi-attempt communication failure escalated to nurse coordinator";
-    } else if (i % 19 === 0) {
-      // Patient declined
-      sideState = "patient-declined";
-      nextAction = "Patient declined recommended procedure; clinician documentation required";
-    } else if (i % 23 === 0) {
-      // Lost to follow-up
-      sideState = "lost-to-follow-up";
-      nextAction = "Certified outreach letter sent; pending case closure documentation";
+      nextAction = "High-risk flag: Multi-attempt communication failure escalated to care coordinator";
     }
 
-    const steps = createPathwaySteps(screeningType, issuedAt, allUsers[i % allUsers.length].name);
+    const steps = createPathwaySteps(screeningType, issuedAt, ownerName);
 
-    // Progress steps proportionally to age of case
     if (status === "closed") {
       steps.forEach((s) => {
         if (s.status !== "skipped") {
@@ -1177,10 +1086,10 @@ export const seedCases: Case[] = (() => {
       }
     }
 
-    const ownerDetails = findOwnerDetails(ownerId);
-
     cases.push({
       id: caseId,
+      organizationId,
+      department: config.department,
       patientId: `P-${1000 + caseNum}`,
       patientName: patientProfile.name,
       patientAge: patientProfile.age,
@@ -1191,12 +1100,12 @@ export const seedCases: Case[] = (() => {
       facility,
       screeningType,
       pathwayType: config.pathwayType,
-      resultValue: `Abnormal / Actionable ${screeningType}`,
+      resultValue: `Actionable ${screeningType} finding`,
       resultInterpretation: `Screening report flagged an out-of-range value requiring clinical follow-up under ${config.program}.`,
       urgency,
       status,
       currentOwner: ownerId,
-      currentOwnerName: ownerDetails.name,
+      currentOwnerName: ownerName,
       currentOwnerRole: ownerRole,
       isQueueOwner: isQueue,
       nextAction,
@@ -1208,7 +1117,7 @@ export const seedCases: Case[] = (() => {
           id: `notif-${caseNum}-1`,
           channel: "sms",
           to: patientProfile.phone,
-          message: `CareLoop: Important update regarding your ${screeningType} test.`,
+          message: `CareLoop: Important update regarding your ${screeningType} test from ${facility}.`,
           status: "delivered",
           sentAt: addHours(issuedAt, 4),
         },
@@ -1222,7 +1131,7 @@ export const seedCases: Case[] = (() => {
           toStep: "issued",
           owner: facility,
           ownerRole: "coordinator",
-          reason: `Routine screening completed and delivered to ${ownerDetails.name}.`,
+          reason: `Routine screening completed and delivered to ${ownerName}.`,
           timestamp: issuedAt,
         },
       ],
@@ -1271,7 +1180,6 @@ export const transitionCase = (
 
   const prevStep = updated.steps.find((s) => s.status === "in-progress") || updated.steps[targetIdx - 1];
 
-  // Mark all steps up to targetStep as completed (unless skipped)
   for (let i = 0; i <= targetIdx; i++) {
     if (updated.steps[i].status !== "skipped") {
       if (i === targetIdx) {
@@ -1293,7 +1201,6 @@ export const transitionCase = (
     }
   }
 
-  // Activate next un-skipped step
   let nextStepIdx = targetIdx + 1;
   while (nextStepIdx < updated.steps.length && updated.steps[nextStepIdx].status === "skipped") {
     nextStepIdx++;
@@ -1309,18 +1216,17 @@ export const transitionCase = (
     updated.nextAction = `Pending: ${updated.steps[nextStepIdx].label}`;
   }
 
-  // Case ownership update
-  updated.currentOwner = input.ownerId;
-  updated.currentOwnerName = input.ownerName;
-  updated.currentOwnerRole = input.ownerRole;
-  updated.isQueueOwner = input.ownerRole === "triage-queue";
+  if (input.ownerRole !== "patient") {
+    updated.currentOwner = input.ownerId;
+    updated.currentOwnerName = input.ownerName;
+    updated.currentOwnerRole = input.ownerRole;
+    updated.isQueueOwner = input.ownerRole === "triage-queue";
+  }
 
-  // Side-state automatic resolution
   if (c.sideState === "escalated" || c.sideState === "overdue" || c.sideState === "unassigned") {
     updated.sideState = null;
   }
 
-  // Loop closure handling
   if (input.toStep === "closed") {
     updated.status = "closed";
     updated.sideState = null;
@@ -1334,7 +1240,6 @@ export const transitionCase = (
     }
   }
 
-  // Immutable audit log
   updated.audit.push({
     id: `aud-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     caseId: updated.id,

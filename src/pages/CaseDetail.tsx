@@ -28,7 +28,7 @@ import { AuditTrail } from "@/components/ui/audittrail";
 import { ConsultThread } from "@/components/ui/consultthread";
 import { ReferralPacket } from "@/components/ui/referralpacket";
 import { ClosureChecklist } from "@/components/ui/closurechecklist";
-import { NotificationSimulator } from "@/components/ui/notificationsimulator";
+// Notification import removed
 import { StatusChip, OwnerBadge, SLATimer, SideStateBadge } from "@/components/ui/chips";
 import { LoopRing } from "@/components/ui/loopring";
 import { useStore } from "@/lib/store";
@@ -68,14 +68,14 @@ export const CaseDetail = () => {
   // Consult composer state
   const [consultQuestion, setConsultQuestion] = React.useState("");
   const [consultUrgency, setConsultUrgency] = React.useState<"routine" | "high" | "urgent">("routine");
-  const [consultTo, setConsultTo] = React.useState(allUsers.find((u) => u.role === "specialist")?.id || "u3");
+  const [consultTo, setConsultTo] = React.useState(allUsers.find((u) => u.role === "specialist")?.id || "usr_spec_maya");
 
   // Reassign modal inline
   const [reassignModalOpen, setReassignModalOpen] = React.useState(false);
-  const [selectedNewOwner, setSelectedNewOwner] = React.useState(allUsers[0].id);
+  const [selectedNewOwner, setSelectedNewOwner] = React.useState(allUsers[0]?.id || "usr_coord_sarah");
   const [reassignReason, setReassignReason] = React.useState("");
 
-  if (!c) {
+  if (!c || !currentUser || !currentRole) {
     return (
       <div className="py-20 text-center space-y-3">
         <p className="text-base font-bold text-teal-deep">Case '{caseId}' Not Found</p>
@@ -636,22 +636,57 @@ export const CaseDetail = () => {
             <AuditTrail entries={c.audit} />
           </div>
 
-          {/* Notification Simulator Drawer/Widget */}
+          {/* Patient Communications Log & Outreach Widget */}
           <div className="p-5 rounded-2xl bg-surface-card border border-surface-border space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b border-surface-border pb-3">
               <div className="flex items-center gap-2">
                 <Bell size={18} className="text-teal-brand" />
-                <h3 className="font-bold text-teal-deep text-sm">Notification Simulator</h3>
+                <h3 className="font-bold text-teal-deep text-sm">Patient Communications Log</h3>
               </div>
-              <span className="text-[10px] font-bold text-muted uppercase">Simulated</span>
+              <span className="text-[10px] font-bold text-muted uppercase">Verified Outreach</span>
             </div>
 
-            <NotificationSimulator
-              caseId={c.id}
-              notifications={c.notifications}
-              onSend={handleSendNotification}
-              defaultRecipient={c.patientPhone}
-            />
+            <div className="space-y-3">
+              {c.notifications && c.notifications.length > 0 ? (
+                c.notifications.map((notif) => (
+                  <div
+                    key={notif.id}
+                    className="p-3 rounded-xl bg-surface-white border border-surface-border text-xs space-y-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-teal-deep uppercase tracking-wider text-[10px]">
+                        {notif.channel} &bull; {notif.to}
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-mint-wash text-teal-brand font-semibold">
+                        {notif.status}
+                      </span>
+                    </div>
+                    <p className="text-body text-[11px]">{notif.message}</p>
+                    <span className="text-[10px] text-muted block font-mono">
+                      {new Date(notif.sentAt).toLocaleString()}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-muted text-center py-2">No communication logged yet.</p>
+              )}
+
+              <div className="pt-2 border-t border-surface-border flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    handleSendNotification(
+                      "sms",
+                      c.patientPhone,
+                      `CareLoop: Follow-up message regarding your ${c.screeningType} care plan from your coordinator.`
+                    )
+                  }
+                  className="w-full bg-teal-brand text-white font-bold text-xs h-8"
+                >
+                  Dispatch SMS Outreach
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

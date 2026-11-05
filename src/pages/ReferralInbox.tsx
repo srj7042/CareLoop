@@ -22,7 +22,8 @@ import type { ReferralPacket as ReferralPacketType } from "@/types";
 
 export const ReferralInbox = () => {
   const navigate = useNavigate();
-  const { cases, currentUser, updateReferral } = useStore();
+  const { getCasesForCurrentUser, currentUser, updateReferral } = useStore();
+  const cases = getCasesForCurrentUser();
 
   const [search, setSearch] = React.useState("");
   const [filterStatus, setFilterStatus] = React.useState<"all" | "pending" | "accepted" | "rejected" | "more-info">("all");
@@ -259,8 +260,8 @@ export const ReferralInbox = () => {
                               onClick={() =>
                                 updateReferral(c.id, {
                                   status: "accepted",
-                                  acceptedBy: currentUser.id,
-                                  acceptedByName: currentUser.name,
+                                  acceptedBy: currentUser?.id || "usr_spec_maya",
+                                  acceptedByName: currentUser?.name || "Dr. Maya Lin, MD, FACS",
                                   acceptedAt: new Date().toISOString(),
                                 })
                               }

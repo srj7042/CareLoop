@@ -7,8 +7,6 @@ import {
   MessageCircle,
   CheckCircle2,
   Clock,
-  Radio,
-  Volume2,
   Globe,
   HeartPulse,
   PhoneCall,
@@ -19,6 +17,12 @@ import {
   Check,
   Calendar,
   AlertCircle,
+  Smartphone,
+  Monitor,
+  User,
+  Stethoscope,
+  SendHorizontal,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,13 +30,28 @@ import { useStore } from "@/lib/store";
 import { t, getScreeningExplanation, type Lang } from "@/data/translations";
 import { formatTime, formatDate } from "@/lib/utils";
 
-export const PatientView = () => {
+const SUPPORTED_LANGUAGES: { code: Lang; label: string; nativeName: string }[] = [
+  { code: "en", label: "English", nativeName: "English" },
+  { code: "ta", label: "Tamil", nativeName: "தமிழ்" },
+  { code: "te", label: "Telugu", nativeName: "తెలుగు" },
+  { code: "hi", label: "Hindi", nativeName: "हिन्दी" },
+  { code: "mr", label: "Marathi", nativeName: "मराठी" },
+];
+
+export const PatientView: React.FC = () => {
   const { caseId } = useParams<{ caseId: string }>();
   const navigate = useNavigate();
-  const { getCase, patientAcknowledge, setPatientPulse, requestCallback } = useStore();
+  const { getCase, getCasesForCurrentUser, patientAcknowledge, setPatientPulse, requestCallback } =
+    useStore();
 
-  const c = React.useMemo(() => getCase(caseId || "CASE-001"), [getCase, caseId]);
+  // Find case: if route has param, find that; else find first case accessible to current user
+  const userCases = getCasesForCurrentUser();
+  const c = React.useMemo(() => {
+    if (caseId) return getCase(caseId);
+    return userCases[0] || getCase("CASE-001");
+  }, [caseId, getCase, userCases]);
 
+  const [viewMode, setViewMode] = React.useState<"web" | "mobile">("web");
   const defaultLang = (c?.patientLanguage as Lang) || "en";
   const [lang, setLang] = React.useState<Lang>(defaultLang);
   const [questionText, setQuestionText] = React.useState("");
@@ -52,16 +71,15 @@ export const PatientView = () => {
     return (
       <div className="py-20 text-center space-y-3">
         <p className="text-base font-bold text-teal-deep">Patient Record Not Found</p>
-        <Button size="sm" onClick={() => navigate("/coordinator")} className="bg-teal-brand text-white">
-          Back to Worklist
+        <p className="text-xs text-muted">You do not have authorization to view this medical record.</p>
+        <Button size="sm" onClick={() => navigate("/")} className="bg-teal-brand text-white">
+          Back to Home
         </Button>
       </div>
     );
   }
 
-  const isRtl = lang === "ar";
   const explanation = getScreeningExplanation(c.screeningType, lang);
-
   const ackStep = c.steps.find((s) => s.key === "acknowledged");
   const isAcknowledged = ackStep?.status === "completed";
   const isClosed = c.status === "closed";
@@ -88,347 +106,514 @@ export const PatientView = () => {
   };
 
   return (
-    <div
-      dir={isRtl ? "rtl" : "ltr"}
-      className="max-w-md mx-auto min-h-screen bg-surface-white pb-12 font-sans"
-    >
-      {/* Mobile Top App Bar */}
-      <div className="sticky top-0 z-30 bg-teal-deep text-white px-4 py-3.5 shadow-md flex items-center justify-between">
+    <div className="space-y-6 font-sans">
+      {/* Top View Mode & Language Selector Bar */}
+      <div className="bg-surface-card border border-surface-border rounded-2xl p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* View Mode Switcher */}
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => navigate(-1)}
-            className="text-white hover:bg-white/10 p-1.5 h-auto -ml-2"
-          >
-            <ChevronLeft size={20} className={isRtl ? "rotate-180" : ""} />
-          </Button>
-          <div>
-            <span className="font-extrabold text-base tracking-tight">CareLoop</span>
-            <p className="text-[10px] text-mint-wash opacity-80 -mt-0.5">
-              {t(lang, "patientPortalTitle")}
-            </p>
+          <span className="text-xs font-bold text-muted uppercase tracking-wider">
+            {t("viewMode", lang)}:
+          </span>
+          <div className="flex items-center bg-surface-white border border-surface-border rounded-xl p-1">
+            <button
+              onClick={() => setViewMode("web")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === "web"
+                  ? "bg-teal-deep text-white shadow-2xs"
+                  : "text-muted hover:text-teal-deep"
+              }`}
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              <span>{t("viewModeWeb", lang)}</span>
+            </button>
+            <button
+              onClick={() => setViewMode("mobile")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === "mobile"
+                  ? "bg-teal-deep text-white shadow-2xs"
+                  : "text-muted hover:text-teal-deep"
+              }`}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>{t("viewModeMobile", lang)}</span>
+            </button>
           </div>
         </div>
 
-        {/* Language Selector Dropdown / Pills */}
-        <div className="flex items-center gap-1">
-          <Globe size={14} className="text-mint-light" />
-          <div className="flex gap-1 bg-white/10 p-0.5 rounded-full">
-            {(["en", "es", "hi", "mr", "ar"] as Lang[]).map((l) => (
+        {/* 5-Language Selector */}
+        <div className="flex items-center gap-2">
+          <Globe className="w-4 h-4 text-teal-brand" />
+          <span className="text-xs font-bold text-muted uppercase tracking-wider">
+            {t("language", lang)}:
+          </span>
+          <div className="flex flex-wrap gap-1 bg-surface-white border border-surface-border p-1 rounded-xl">
+            {SUPPORTED_LANGUAGES.map((item) => (
               <button
-                key={l}
-                onClick={() => setLang(l)}
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${
-                  lang === l
-                    ? "bg-white text-teal-deep shadow-xs"
-                    : "text-white/80 hover:text-white"
+                key={item.code}
+                onClick={() => setLang(item.code)}
+                className={`text-xs font-bold px-2.5 py-1 rounded-lg transition-all ${
+                  lang === item.code
+                    ? "bg-teal-brand text-white shadow-2xs"
+                    : "text-body hover:text-teal-deep hover:bg-mint-wash"
                 }`}
               >
-                {l.toUpperCase()}
+                {item.nativeName}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
-        {/* Welcome Greeting & Patient Header */}
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-mint-wash to-white border border-mint-light/60 shadow-xs space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-teal-deep">
-              {c.patientName} • {c.patientAge}y
-            </span>
-            <Badge
-              variant={
-                c.urgency === "urgent"
-                  ? "coral"
-                  : c.urgency === "high"
-                  ? "amber"
-                  : "mint"
-              }
-              className="text-[10px] font-semibold capitalize"
-            >
-              {c.urgency === "urgent"
-                ? t(lang, "urgentBadge")
-                : c.urgency === "high"
-                ? t(lang, "highBadge")
-                : t(lang, "routineBadge")}
-            </Badge>
-          </div>
-
-          <h2 className="text-xl font-extrabold text-teal-deep tracking-tight">
-            {explanation.title}
-          </h2>
-
-          <div className="flex items-center justify-between text-[11px] text-muted pt-1 border-t border-mint-light/40">
-            <span>
-              {t(lang, "resultDate")}: {formatDate(c.createdAt)}
-            </span>
-            <span className="font-semibold text-teal-brand">{c.facility}</span>
-          </div>
-        </div>
-
-        {/* Channel Delivery Status Simulation Ribbon */}
-        <div className="p-3 bg-surface-card rounded-xl border border-surface-border text-xs space-y-1.5 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="font-bold text-teal-deep text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-              <Mail size={13} className="text-teal-brand" /> Communication Delivery Status
-            </span>
-            <span className="text-[10px] font-bold text-muted bg-surface-white px-2 py-0.5 rounded">
-              SIMULATED
-            </span>
-          </div>
-
-          <div className="grid grid-cols-4 gap-1 text-center pt-1">
-            <div className="p-1 rounded bg-mint-wash text-teal-deep font-bold text-[10px]">
-              ✓ Sent
-            </div>
-            <div className="p-1 rounded bg-mint-wash text-teal-deep font-bold text-[10px]">
-              ✓ Delivered
-            </div>
-            <div
-              className={`p-1 rounded font-bold text-[10px] ${
-                isAcknowledged
-                  ? "bg-mint-wash text-teal-deep"
-                  : "bg-surface-white border border-surface-border text-muted"
-              }`}
-            >
-              ✓ Read
-            </div>
-            <div
-              className={`p-1 rounded font-bold text-[10px] ${
-                isAcknowledged
-                  ? "bg-teal-brand text-white"
-                  : "bg-surface-white border border-surface-border text-muted"
-              }`}
-            >
-              {isAcknowledged ? "✓ Confirmed" : "Pending"}
-            </div>
-          </div>
-        </div>
-
-        {/* 1. What This Means Card (6th Grade Reading Level) */}
-        <div className="p-5 rounded-2xl bg-surface-card border border-surface-border space-y-3 shadow-xs">
-          <div className="flex items-center gap-2 text-teal-deep">
-            <div className="w-7 h-7 rounded-lg bg-teal-brand/10 text-teal-brand flex items-center justify-center font-bold">
-              <Clock size={16} />
-            </div>
-            <h3 className="font-bold text-base">{t(lang, "whatThisMeans")}</h3>
-          </div>
-
-          <p className="text-base text-body leading-relaxed font-normal">
-            {explanation.whatThisMeans}
-          </p>
-
-          <div className="p-3 rounded-xl bg-surface-white border border-surface-border/70 text-xs">
-            <span className="text-muted block text-[11px] font-semibold uppercase tracking-wider mb-0.5">
-              Reported Test Finding
-            </span>
-            <span className="font-mono font-bold text-teal-deep text-sm">{c.resultValue}</span>
-          </div>
-        </div>
-
-        {/* 2. What Happens Next Card */}
-        <div className="p-5 rounded-2xl bg-surface-card border border-surface-border space-y-3 shadow-xs">
-          <div className="flex items-center gap-2 text-teal-deep">
-            <div className="w-7 h-7 rounded-lg bg-mint-wash text-teal-brand flex items-center justify-center font-bold">
-              <ArrowRight size={16} className={isRtl ? "rotate-180" : ""} />
-            </div>
-            <h3 className="font-bold text-base">{t(lang, "whatHappensNext")}</h3>
-          </div>
-
-          <div className="space-y-2.5">
-            {explanation.whatHappensNext.map((stepText, idx) => (
-              <div key={idx} className="flex items-start gap-2.5 text-sm text-body">
-                <span className="w-5 h-5 rounded-full bg-teal-brand/10 text-teal-brand font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                  {idx + 1}
-                </span>
-                <span className="leading-relaxed">{stepText}</span>
+      {/* ========================================================================= */}
+      {/* 1. WEB DESKTOP VIEW                                                       */}
+      {/* ========================================================================= */}
+      {viewMode === "web" && (
+        <div className="space-y-6 animate-in fade-in duration-150">
+          {/* Patient Banner */}
+          <div className="p-6 rounded-2xl bg-gradient-to-r from-teal-deep via-[#0d4a46] to-teal-deep text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Badge variant="mint" className="text-[10px] uppercase font-bold tracking-wider">
+                  {c.urgency === "urgent"
+                    ? t("urgentBadge", lang)
+                    : c.urgency === "high"
+                    ? t("highBadge", lang)
+                    : t("routineBadge", lang)}
+                </Badge>
+                <span className="text-xs text-mint-wash opacity-90">&bull; {c.program}</span>
               </div>
-            ))}
-          </div>
-
-          {/* Reassurance Message Banner */}
-          <div className="p-3.5 bg-mint-wash border border-mint-light rounded-xl flex items-start gap-2.5 text-xs text-teal-deep leading-relaxed">
-            <HeartPulse size={18} className="text-teal-brand flex-shrink-0 mt-0.5" />
-            <p className="font-medium">{explanation.reassurance}</p>
-          </div>
-        </div>
-
-        {/* 3. What You Need To Do Today Card */}
-        <div className="p-5 rounded-2xl bg-surface-card border border-surface-border space-y-4 shadow-xs">
-          <div className="flex items-center gap-2 text-teal-deep">
-            <div className="w-7 h-7 rounded-lg bg-teal-brand/10 text-teal-brand flex items-center justify-center font-bold">
-              <Check size={16} />
-            </div>
-            <h3 className="font-bold text-base">{t(lang, "whatINeedToDo")}</h3>
-          </div>
-
-          {/* Acknowledge Check Widget */}
-          {!isAcknowledged ? (
-            <div className="space-y-3 p-4 rounded-xl bg-mint-wash/50 border border-mint-light">
-              <p className="font-bold text-teal-deep text-sm">
-                {t(lang, "doYouUnderstand")}
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{explanation.title}</h1>
+              <p className="text-xs text-mint-light">
+                {t("patientName", lang)}: <strong>{c.patientName}</strong> &bull; {c.patientAge} years old &bull; {c.facility}
               </p>
+            </div>
 
-              <div className="flex flex-col gap-2">
-                <Button
-                  onClick={() => handleAcknowledge("yes")}
-                  className="w-full bg-teal-brand text-white hover:bg-teal-hover font-bold text-sm py-2.5 h-auto shadow-xs"
-                >
-                  <CheckCircle2 size={16} className="mr-2" />
-                  {t(lang, "yes")}
-                </Button>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleAcknowledge("questions")}
-                    className="border-surface-border bg-white text-body hover:bg-surface-white text-xs font-semibold"
-                  >
-                    <HelpCircle size={14} className="mr-1.5 text-amber" />
-                    {t(lang, "questions")}
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={() => handleAcknowledge("call")}
-                    className="border-surface-border bg-white text-body hover:bg-surface-white text-xs font-semibold"
-                  >
-                    <PhoneCall size={14} className="mr-1.5 text-teal-brand" />
-                    {t(lang, "callMe")}
-                  </Button>
-                </div>
+            <div className="text-left md:text-right text-xs text-mint-wash space-y-1">
+              <div>
+                {t("resultDate", lang)}: <strong>{formatDate(c.createdAt)}</strong>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white font-medium">
+                {isAcknowledged ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                    <span>{t("statusAcknowledged", lang)}</span>
+                  </>
+                ) : (
+                  <>
+                    <Clock className="w-3.5 h-3.5 text-amber-300" />
+                    <span>{t("statusPending", lang)}</span>
+                  </>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="p-3.5 bg-mint-wash border border-mint-light rounded-xl flex items-center gap-2 text-teal-deep text-sm font-bold">
-              <CheckCircle2 size={18} className="text-teal-brand" />
-              <span>{t(lang, "statusAcknowledged")}</span>
-            </div>
-          )}
-
-          {/* Question / Callback Box */}
-          {showQuestionInput && (
-            <div className="space-y-2 p-3 bg-surface-white rounded-xl border border-surface-border text-xs">
-              <p className="font-bold text-teal-deep">What questions can we answer for you?</p>
-              <textarea
-                value={questionText}
-                onChange={(e) => setQuestionText(e.target.value)}
-                placeholder="Type your question or concern here..."
-                rows={2}
-                className="w-full text-xs p-2 rounded-md border border-surface-border bg-white focus:outline-none focus:ring-1 focus:ring-teal-brand"
-              />
-              <div className="flex justify-end gap-2">
-                <Button size="sm" variant="ghost" onClick={() => setShowQuestionInput(false)} className="text-xs">
-                  Cancel
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleCallbackSubmit}
-                  className="bg-teal-brand text-white text-xs font-semibold"
-                >
-                  Send to Coordinator
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {callbackRequested && (
-            <div className="p-3 bg-mint-wash border border-mint-light rounded-xl text-xs text-teal-deep flex items-start gap-2">
-              <PhoneCall size={16} className="text-teal-brand flex-shrink-0 mt-0.5" />
-              <span>{t(lang, "callbackSuccess")}</span>
-            </div>
-          )}
-
-          {/* Talk to Coordinator Direct Button */}
-          {!callbackRequested && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                setCallbackRequested(true);
-                requestCallback(c.id, "Patient requested direct callback via patient portal button");
-              }}
-              className="w-full border-teal-brand/40 text-teal-deep hover:bg-mint-wash text-xs font-semibold py-2.5 h-auto flex items-center justify-center gap-2"
-            >
-              <PhoneCall size={15} className="text-teal-brand" />
-              <span>{t(lang, "talkToSomeone")}</span>
-            </Button>
-          )}
-        </div>
-
-        {/* 4. 2-Question Pulse Survey Card */}
-        <div className="p-5 rounded-2xl bg-surface-card border border-surface-border space-y-4 shadow-xs">
-          <div className="flex items-center gap-2 text-teal-deep">
-            <div className="w-7 h-7 rounded-lg bg-amber/15 text-[#8C5D00] flex items-center justify-center font-bold">
-              <Star size={16} />
-            </div>
-            <h3 className="font-bold text-base">{t(lang, "pulseSurveyTitle")}</h3>
           </div>
 
-          {!surveySubmitted ? (
-            <div className="space-y-4 text-xs">
-              {/* Question 1: Understanding */}
-              <div className="space-y-2">
-                <p className="font-semibold text-teal-deep">{t(lang, "pulseQ1")}</p>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((score) => (
-                    <button
-                      key={score}
-                      onClick={() => setQ1Score(score)}
-                      className={`flex-1 py-2 rounded-lg border text-center font-bold text-xs transition-all ${
-                        q1Score === score
-                          ? "bg-teal-brand text-white border-teal-brand shadow-xs"
-                          : "border-surface-border bg-surface-white text-muted hover:bg-white"
-                      }`}
-                    >
-                      {score}★
-                    </button>
+          {/* Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left 7 Cols: Results & Actions */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Plain Language Explanation */}
+              <div className="p-6 rounded-2xl bg-surface-card border border-surface-border space-y-4 shadow-2xs">
+                <div className="flex items-center gap-2 text-teal-deep">
+                  <div className="w-8 h-8 rounded-xl bg-teal-brand/10 text-teal-brand flex items-center justify-center font-bold">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-lg font-extrabold">{t("whatThisMeans", lang)}</h2>
+                </div>
+
+                <p className="text-base text-body leading-relaxed">{explanation.whatThisMeans}</p>
+
+                <div className="p-3.5 rounded-xl bg-surface-white border border-surface-border text-xs">
+                  <span className="text-muted block text-[11px] font-semibold uppercase tracking-wider mb-1">
+                    Clinical Finding
+                  </span>
+                  <span className="font-mono font-bold text-teal-deep text-sm">{c.resultValue}</span>
+                </div>
+              </div>
+
+              {/* What Happens Next */}
+              <div className="p-6 rounded-2xl bg-surface-card border border-surface-border space-y-4 shadow-2xs">
+                <div className="flex items-center gap-2 text-teal-deep">
+                  <div className="w-8 h-8 rounded-xl bg-mint-wash text-teal-brand flex items-center justify-center font-bold">
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-lg font-extrabold">{t("whatHappensNext", lang)}</h2>
+                </div>
+
+                <div className="space-y-3">
+                  {explanation.whatHappensNext.map((stepText, idx) => (
+                    <div key={idx} className="flex items-start gap-3 text-sm text-body">
+                      <span className="w-6 h-6 rounded-full bg-teal-brand/10 text-teal-brand font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                        {idx + 1}
+                      </span>
+                      <span className="leading-relaxed">{stepText}</span>
+                    </div>
                   ))}
                 </div>
               </div>
 
-              {/* Question 2: Confidence */}
-              <div className="space-y-2">
-                <p className="font-semibold text-teal-deep">{t(lang, "pulseQ2")}</p>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((score) => (
-                    <button
-                      key={score}
-                      onClick={() => setQ2Score(score)}
-                      className={`flex-1 py-2 rounded-lg border text-center font-bold text-xs transition-all ${
-                        q2Score === score
-                          ? "bg-teal-brand text-white border-teal-brand shadow-xs"
-                          : "border-surface-border bg-surface-white text-muted hover:bg-white"
-                      }`}
-                    >
-                      {score}★
-                    </button>
-                  ))}
+              {/* Reassurance Alert */}
+              <div className="p-4 rounded-xl bg-mint-wash border border-mint-light/60 flex items-start gap-3 text-xs text-teal-deep">
+                <HeartPulse className="w-5 h-5 text-teal-brand flex-shrink-0 mt-0.5" />
+                <p className="leading-relaxed font-medium">{explanation.reassurance}</p>
+              </div>
+
+              {/* Patient 1-Tap Actions */}
+              <div className="p-6 rounded-2xl bg-surface-card border border-surface-border space-y-4 shadow-2xs">
+                <h3 className="text-base font-extrabold text-teal-deep">{t("whatINeedToDo", lang)}</h3>
+
+                {isAcknowledged ? (
+                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2.5">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                    <div>
+                      <strong className="font-bold block text-sm">{t("statusAcknowledged", lang)}</strong>
+                      <span>Your confirmation is logged in your electronic care record.</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted">{t("doYouUnderstand", lang)}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      <Button
+                        onClick={() => handleAcknowledge("yes")}
+                        className="bg-teal-deep hover:bg-teal-brand text-white font-bold text-xs h-11 rounded-xl shadow-xs"
+                      >
+                        <Check className="w-4 h-4 mr-1.5" />
+                        {t("yes", lang)}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleAcknowledge("questions")}
+                        className="border-surface-border text-teal-deep hover:bg-mint-wash font-semibold text-xs h-11 rounded-xl"
+                      >
+                        <HelpCircle className="w-4 h-4 mr-1.5" />
+                        {t("questions", lang)}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleAcknowledge("call")}
+                        className="border-surface-border text-teal-deep hover:bg-mint-wash font-semibold text-xs h-11 rounded-xl"
+                      >
+                        <PhoneCall className="w-4 h-4 mr-1.5" />
+                        {t("callMe", lang)}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Free Callback Request Card */}
+                {callbackRequested ? (
+                  <div className="p-3.5 rounded-xl bg-mint-wash border border-mint-light text-xs text-teal-deep font-semibold flex items-center gap-2">
+                    <PhoneCall className="w-4 h-4 text-teal-brand" />
+                    <span>{t("callbackSuccess", lang)}</span>
+                  </div>
+                ) : (
+                  showQuestionInput && (
+                    <div className="p-4 rounded-xl bg-surface-white border border-surface-border space-y-2">
+                      <label className="block text-xs font-bold text-teal-deep">
+                        What would you like to ask your coordinator?
+                      </label>
+                      <input
+                        type="text"
+                        value={questionText}
+                        onChange={(e) => setQuestionText(e.target.value)}
+                        placeholder="e.g. Will this test hurt? Can I bring someone with me?"
+                        className="w-full text-xs p-2.5 rounded-lg border border-surface-border bg-white"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleCallbackSubmit}
+                        className="bg-teal-brand text-white font-bold text-xs"
+                      >
+                        {t("requestCallback", lang)}
+                      </Button>
+                    </div>
+                  )
+                )}
+
+                {/* 2-Question Pulse Check */}
+                {!surveySubmitted && isAcknowledged && (
+                  <div className="p-4 rounded-xl bg-surface-white border border-surface-border space-y-3 mt-4">
+                    <span className="font-extrabold text-xs text-teal-deep block">
+                      {t("pulseSurveyTitle", lang)}
+                    </span>
+                    <div className="space-y-2 text-xs">
+                      <div>
+                        <p className="text-muted mb-1">{t("pulseQ1", lang)}</p>
+                        <div className="flex gap-1.5">
+                          {[1, 2, 3, 4, 5].map((val) => (
+                            <button
+                              key={val}
+                              onClick={() => setQ1Score(val)}
+                              className={`w-7 h-7 rounded-lg text-xs font-bold ${
+                                q1Score === val ? "bg-teal-brand text-white" : "bg-surface-border text-muted"
+                              }`}
+                            >
+                              {val}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="pt-2">
+                        <p className="text-muted mb-1">{t("pulseQ2", lang)}</p>
+                        <div className="flex gap-1.5">
+                          {[1, 2, 3, 4, 5].map((val) => (
+                            <button
+                              key={val}
+                              onClick={() => setQ2Score(val)}
+                              className={`w-7 h-7 rounded-lg text-xs font-bold ${
+                                q2Score === val ? "bg-teal-brand text-white" : "bg-surface-border text-muted"
+                              }`}
+                            >
+                              {val}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <Button
+                        size="sm"
+                        onClick={handlePulseSubmit}
+                        className="bg-teal-deep text-white text-xs mt-2"
+                      >
+                        {t("pulseSubmit", lang)}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right 5 Cols: Care Team & Care Journey Timeline */}
+            <div className="lg:col-span-5 space-y-6">
+              {/* Assigned Care Team */}
+              <div className="p-6 rounded-2xl bg-surface-card border border-surface-border space-y-4 shadow-2xs">
+                <h3 className="text-base font-extrabold text-teal-deep">{t("careTeam", lang)}</h3>
+
+                <div className="space-y-3">
+                  <div className="p-3 rounded-xl bg-surface-white border border-surface-border flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-teal-brand/10 text-teal-brand font-bold text-xs flex items-center justify-center">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted block">
+                        {t("coordinatorLabel", lang)}
+                      </span>
+                      <strong className="text-xs font-extrabold text-teal-deep">
+                        {c.currentOwnerRole === "coordinator" && c.currentOwnerName
+                          ? c.currentOwnerName
+                          : c.organizationId === "org-metro"
+                          ? "Jessica Taylor, RN"
+                          : "Sarah Thompson, BSN, RN"}
+                      </strong>
+                      <p className="text-[11px] text-muted">Dedicated Patient Navigator</p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-surface-white border border-surface-border flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-mint-wash text-teal-deep font-bold text-xs flex items-center justify-center">
+                      <Stethoscope className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted block">
+                        {t("physicianLabel", lang)}
+                      </span>
+                      <strong className="text-xs font-extrabold text-teal-deep">
+                        Dr. Kenneth Reynolds, MD
+                      </strong>
+                      <p className="text-[11px] text-muted">Primary Care Physician</p>
+                    </div>
+                  </div>
+
+                  {c.referral && (
+                    <div className="p-3 rounded-xl bg-surface-white border border-surface-border flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-amber/15 text-[#8C5D00] font-bold text-xs flex items-center justify-center">
+                        <SendHorizontal className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted block">
+                          {t("specialistLabel", lang)}
+                        </span>
+                        <strong className="text-xs font-extrabold text-teal-deep">
+                          Dr. Maya Lin, MD, FACS
+                        </strong>
+                        <p className="text-[11px] text-muted">
+                          {c.referral.specialtyRequired || "Consulting Specialist"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <Button
-                onClick={handlePulseSubmit}
-                className="w-full bg-teal-brand text-white hover:bg-teal-hover font-bold text-xs py-2 h-auto"
-              >
-                {t(lang, "pulseSubmit")}
-              </Button>
+              {/* Care Journey Timeline */}
+              <div className="p-6 rounded-2xl bg-surface-card border border-surface-border space-y-4 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-extrabold text-teal-deep">{t("careTimeline", lang)}</h3>
+                  <Badge variant="mint" className="text-[10px]">
+                    {c.steps.filter((s) => s.status === "completed").length} of {c.steps.length} Completed
+                  </Badge>
+                </div>
+
+                <div className="space-y-3 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-border">
+                  {c.steps
+                    .filter((s) => s.status !== "skipped")
+                    .map((step, idx) => {
+                      const isComplete = step.status === "completed";
+                      const isInProgress = step.status === "in-progress";
+
+                      return (
+                        <div key={idx} className="relative flex items-start gap-3 pl-1">
+                          <div
+                            className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 z-10 ${
+                              isComplete
+                                ? "bg-teal-brand text-white"
+                                : isInProgress
+                                ? "bg-amber-400 text-slate-900 animate-pulse"
+                                : "bg-surface-border text-muted"
+                            }`}
+                          >
+                            {isComplete ? "✓" : idx + 1}
+                          </div>
+
+                          <div className="space-y-0.5 text-xs">
+                            <span
+                              className={`font-bold block ${
+                                isComplete ? "text-teal-deep" : isInProgress ? "text-[#8C5D00]" : "text-muted"
+                              }`}
+                            >
+                              {step.label}
+                            </span>
+                            {step.timestamp && (
+                              <span className="text-[10px] text-muted block">
+                                {formatDate(step.timestamp)} &bull; {formatTime(step.timestamp)}
+                              </span>
+                            )}
+                            {step.note && <p className="text-[11px] text-muted leading-tight">{step.note}</p>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="p-3 bg-mint-wash border border-mint-light rounded-xl text-xs text-teal-deep flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-teal-brand" />
-              <span>{t(lang, "pulseThankYou")}</span>
-            </div>
-          )}
+          </div>
         </div>
+      )}
 
-        {/* Footer Disclaimer */}
-        <p className="text-[11px] text-muted text-center leading-relaxed px-4 pt-2">
-          {t(lang, "simulatedDisclaimer")}
-        </p>
-      </div>
+      {/* ========================================================================= */}
+      {/* 2. MOBILE SMARTPHONE VIEW                                                 */}
+      {/* ========================================================================= */}
+      {viewMode === "mobile" && (
+        <div className="flex justify-center py-4 animate-in fade-in duration-150">
+          <div className="w-[390px] min-h-[780px] bg-[#060D12] text-slate-100 rounded-[44px] p-3 shadow-2xl border-4 border-slate-700 relative overflow-hidden flex flex-col justify-between">
+            {/* Phone Notch & Status Bar */}
+            <div className="w-full flex items-center justify-between px-6 pt-2 pb-1 text-[11px] text-slate-400">
+              <span className="font-bold">9:41</span>
+              <div className="w-20 h-4 bg-slate-800 rounded-full mx-auto" />
+              <div className="flex items-center gap-1">
+                <span>5G</span>
+                <span>100%</span>
+              </div>
+            </div>
+
+            {/* Mobile App Header */}
+            <div className="bg-[#241710] px-4 py-3 border-b border-[#443024] flex items-center justify-between rounded-t-3xl">
+              <div className="flex items-center gap-2">
+                <HeartPulse className="w-4 h-4 text-[#D49B6A]" />
+                <span className="font-extrabold text-sm text-white">CareLoop</span>
+              </div>
+              <Badge variant="mint" className="text-[9px]">
+                {c.patientLanguage.toUpperCase()}
+              </Badge>
+            </div>
+
+            {/* Mobile Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+              {/* Patient Banner */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#2D1D15] to-[#20140E] border border-[#443024] space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-white text-sm">{c.patientName}</span>
+                  <Badge variant={c.urgency === "urgent" ? "coral" : "mint"} className="text-[9px]">
+                    {c.screeningType}
+                  </Badge>
+                </div>
+                <h3 className="text-base font-extrabold text-[#D49B6A] leading-snug">
+                  {explanation.title}
+                </h3>
+                <p className="text-[11px] text-[#A8988B]">
+                  {formatDate(c.createdAt)} &bull; {c.facility}
+                </p>
+              </div>
+
+              {/* What This Means */}
+              <div className="p-4 rounded-2xl bg-[#2D1D15] border border-[#443024] space-y-2">
+                <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-[#D49B6A]" />
+                  {t("whatThisMeans", lang)}
+                </h4>
+                <p className="text-[#E6DDD5] text-xs leading-relaxed">{explanation.whatThisMeans}</p>
+                <div className="p-2 rounded-lg bg-[#19100B] text-[11px] font-mono text-[#D49B6A]">
+                  {c.resultValue}
+                </div>
+              </div>
+
+              {/* Next Steps List */}
+              <div className="p-4 rounded-2xl bg-[#2D1D15] border border-[#443024] space-y-2">
+                <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
+                  <ArrowRight className="w-3.5 h-3.5 text-[#D49B6A]" />
+                  {t("whatHappensNext", lang)}
+                </h4>
+                <div className="space-y-2">
+                  {explanation.whatHappensNext.map((stepText, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-[#E6DDD5] text-xs">
+                      <span className="w-4 h-4 rounded-full bg-[#965F2B]/30 text-[#D49B6A] font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
+                        {idx + 1}
+                      </span>
+                      <span>{stepText}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Reassurance */}
+              <div className="p-3 rounded-xl bg-[#965F2B]/15 border border-[#965F2B]/30 text-xs text-[#E8B88A] leading-snug">
+                {explanation.reassurance}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 space-y-2">
+                {isAcknowledged ? (
+                  <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-800 text-emerald-300 font-bold text-center text-xs flex items-center justify-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    {t("statusAcknowledged", lang)}
+                  </div>
+                ) : (
+                  <>
+                    <Button
+                      onClick={() => handleAcknowledge("yes")}
+                      className="w-full bg-[#965F2B] hover:bg-[#7E4D1E] text-white font-bold text-xs h-10 rounded-xl"
+                    >
+                      {t("yes", lang)}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleAcknowledge("call")}
+                      className="w-full border-[#543C2E] text-[#E6DDD5] hover:bg-[#38251B] font-semibold text-xs h-10 rounded-xl"
+                    >
+                      {t("callMe", lang)}
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Phone Home Bar */}
+            <div className="w-32 h-1 bg-slate-700 rounded-full mx-auto my-1" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

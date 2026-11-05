@@ -1,15 +1,50 @@
-export type Role = "patient" | "coordinator" | "clinician" | "specialist" | "admin";
+export type Role =
+  | "master_admin"
+  | "director"
+  | "hod"
+  | "coordinator"
+  | "clinician"
+  | "specialist"
+  | "patient";
+
+export type UserCustomField = {
+  id: string;
+  label: string;
+  value: string;
+};
 
 export type User = {
   id: string;
   name: string;
+  email: string;
   role: Role;
+  organizationId: string;
+  organizationName: string;
   facility: string;
   department?: string;
-  email?: string;
   phone?: string;
+  secondaryPhone?: string;
+  title?: string;
+  bio?: string;
+  customFields?: UserCustomField[];
   avatar?: string;
+  status: "active" | "inactive";
+  lastLogin?: string;
 };
+
+export type Organization = {
+  id: string;
+  name: string;
+  code: string;
+  type: "health_system" | "hospital" | "academic_center" | "clinic_network";
+  departments: string[];
+  activeScreeningPrograms: string[];
+  slaHoursThreshold: number;
+  contactEmail: string;
+  createdAt: string;
+};
+
+export type Lang = "en" | "ta" | "te" | "hi" | "mr";
 
 export type CaseStatus = "open" | "closed";
 
@@ -132,12 +167,14 @@ export type ClinicalPathwayType =
 
 export type Case = {
   id: string;
+  organizationId: string;
+  department: string;
   patientId: string;
   patientName: string;
   patientAge: number;
   patientGender: "Female" | "Male" | "Other";
   patientPhone: string;
-  patientLanguage: "en" | "es" | "hi" | "mr" | "ar";
+  patientLanguage: Lang;
   program: string;
   facility: string;
   screeningType: string;
