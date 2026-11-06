@@ -46,7 +46,7 @@ export const REGISTERED_ACCOUNTS: (User & { passwordHash: string })[] = [
     organizationId: "org-apex",
     organizationName: "Apex Health System",
     facility: "Apex Central Headquarters",
-    department: "Enterprise Systems & Governance",
+    department: "Administration",
     phone: "+1 (555) 100-2001",
     status: "active",
     lastLogin: new Date().toISOString(),

@@ -8,9 +8,11 @@ import {
   Users,
   ChevronRight,
   ArrowUpRight,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { GlassCard, StatusPill, IconButton } from "@/components/design-system";
 import { useStore } from "@/lib/store";
 import { SYSTEM_ORGANIZATIONS } from "@/lib/auth";
 
@@ -66,124 +68,127 @@ export const DirectorDashboard: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
       {/* Executive Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-surface-border">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/80">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Badge variant="mint" className="text-[10px] font-semibold">
-              <Building2 className="w-3 h-3 mr-1 inline" />
-              Executive Medical Directorate
-            </Badge>
-            <span className="text-xs text-muted font-medium">
-              {userOrg.name} &bull; System-Wide Oversight
-            </span>
+          <div className="flex items-center gap-2 mb-2">
+            <StatusPill variant="lavender" label="Executive Medical Directorate" size="sm" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-teal-deep tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#1E2532] tracking-tight">
             Executive Screening &amp; Closed-Loop Performance
           </h1>
-          <p className="text-xs sm:text-sm text-muted">
+          <p className="text-xs sm:text-sm text-[#798393] mt-1">
             Institutional overview of diagnostic continuum, departmental throughput, and SLA compliance.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="px-3 py-1.5 rounded-xl bg-surface-white border border-surface-border text-xs text-muted flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Target SLA: &lt; {userOrg.slaHoursThreshold}h Resolution</span>
-          </div>
+          <IconButton
+            icon={<ChevronRight size={18} className="text-[#1E2532]" />}
+            label="Worklist"
+            subtext="Triage Caseload"
+            onClick={() => navigate("/coordinator")}
+            variant="frosted"
+          />
         </div>
       </div>
 
       {/* Primary KPI Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-surface-card border border-surface-border shadow-2xs">
+        {/* KPI 1 */}
+        <GlassCard className="p-5 rounded-[26px]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-muted uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#798393] uppercase tracking-wider">
               Loop Closure Rate
             </span>
-            <span className="p-1.5 rounded-lg bg-mint-wash text-teal-brand">
+            <span className="w-8 h-8 rounded-full bg-[#10B981]/15 text-[#10B981] flex items-center justify-center">
               <ShieldCheck className="w-4 h-4" />
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-teal-deep">{loopClosureRate}%</span>
-            <span className="text-xs font-semibold text-emerald-600">+4.2% this quarter</span>
+            <span className="text-3xl font-black text-[#1E2532]">{loopClosureRate}%</span>
+            <span className="text-xs font-semibold text-[#10B981] flex items-center">
+              <TrendingUp size={12} className="mr-0.5 inline" /> +4.2%
+            </span>
           </div>
-          <p className="text-[11px] text-muted mt-2">
+          <p className="text-[11px] text-[#798393] mt-2 font-medium">
             {closedCases.length} of {totalCases} abnormal findings verified closed
           </p>
-        </div>
+        </GlassCard>
 
-        <div className="p-5 rounded-2xl bg-surface-card border border-surface-border shadow-2xs">
+        {/* KPI 2 */}
+        <GlassCard className="p-5 rounded-[26px]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-muted uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#798393] uppercase tracking-wider">
               Mean Time to Action
             </span>
-            <span className="p-1.5 rounded-lg bg-teal-brand/10 text-teal-brand">
+            <span className="w-8 h-8 rounded-full bg-[#8B5CF6]/15 text-[#8B5CF6] flex items-center justify-center">
               <Clock className="w-4 h-4" />
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-teal-deep">38.4h</span>
-            <span className="text-xs font-semibold text-emerald-600">&lt; 72h benchmark</span>
+            <span className="text-3xl font-black text-[#1E2532]">38.4h</span>
+            <span className="text-xs font-semibold text-[#10B981]">&lt; 72h benchmark</span>
           </div>
-          <p className="text-[11px] text-muted mt-2">
+          <p className="text-[11px] text-[#798393] mt-2 font-medium">
             Initial patient notification &amp; acknowledgement speed
           </p>
-        </div>
+        </GlassCard>
 
-        <div className="p-5 rounded-2xl bg-surface-card border border-surface-border shadow-2xs">
+        {/* KPI 3 */}
+        <GlassCard className="p-5 rounded-[26px]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-muted uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#798393] uppercase tracking-wider">
               High-Risk Escalations
             </span>
-            <span className="p-1.5 rounded-lg bg-coral/15 text-coral">
+            <span className="w-8 h-8 rounded-full bg-rose-500/15 text-[#EF4444] flex items-center justify-center">
               <AlertTriangle className="w-4 h-4" />
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-coral">{escalatedCases.length}</span>
-            <span className="text-xs font-semibold text-muted">require attention</span>
+            <span className="text-3xl font-black text-[#EF4444]">{escalatedCases.length}</span>
+            <span className="text-xs font-semibold text-[#798393]">require attention</span>
           </div>
-          <p className="text-[11px] text-muted mt-2">
+          <p className="text-[11px] text-[#798393] mt-2 font-medium">
             Urgent findings or multi-attempt communication stalls
           </p>
-        </div>
+        </GlassCard>
 
-        <div className="p-5 rounded-2xl bg-surface-card border border-surface-border shadow-2xs">
+        {/* KPI 4 */}
+        <GlassCard className="p-5 rounded-[26px]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-muted uppercase tracking-wider">
+            <span className="text-xs font-bold text-[#798393] uppercase tracking-wider">
               Active Caseload
             </span>
-            <span className="p-1.5 rounded-lg bg-mint-wash text-teal-brand">
+            <span className="w-8 h-8 rounded-full bg-[#10B981]/15 text-[#10B981] flex items-center justify-center">
               <Users className="w-4 h-4" />
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-teal-deep">{openCases.length}</span>
-            <span className="text-xs font-semibold text-muted">across 4 departments</span>
+            <span className="text-3xl font-black text-[#1E2532]">{openCases.length}</span>
+            <span className="text-xs font-semibold text-[#798393]">across 4 departments</span>
           </div>
-          <p className="text-[11px] text-muted mt-2">
+          <p className="text-[11px] text-[#798393] mt-2 font-medium">
             Active patient pathways currently navigating care
           </p>
-        </div>
+        </GlassCard>
       </div>
 
       {/* Department Performance Matrix */}
-      <div className="bg-surface-card border border-surface-border rounded-2xl p-6 shadow-2xs">
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-surface-border">
+      <GlassCard className="p-6 rounded-[26px]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-white/80">
           <div>
-            <h2 className="text-lg font-extrabold text-teal-deep">Departmental Performance Comparison</h2>
-            <p className="text-xs text-muted">
+            <h2 className="text-lg font-extrabold text-[#1E2532]">Departmental Performance Comparison</h2>
+            <p className="text-xs text-[#798393]">
               Benchmark loop closure rates, active volumes, and SLA breaches by clinical service line.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setSelectedDept("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 selectedDept === "all"
-                  ? "bg-teal-deep text-white shadow-2xs"
-                  : "bg-surface-white text-muted hover:text-teal-deep border border-surface-border"
+                  ? "bg-white text-[#1E2532] shadow-xs border border-white"
+                  : "bg-white/60 text-[#798393] hover:text-[#1E2532]"
               }`}
             >
               All Departments
@@ -192,10 +197,10 @@ export const DirectorDashboard: React.FC = () => {
               <button
                 key={dept}
                 onClick={() => setSelectedDept(dept)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   selectedDept === dept
-                    ? "bg-teal-deep text-white shadow-2xs"
-                    : "bg-surface-white text-muted hover:text-teal-deep border border-surface-border"
+                    ? "bg-white text-[#1E2532] shadow-xs border border-white"
+                    : "bg-white/60 text-[#798393] hover:text-[#1E2532]"
                 }`}
               >
                 {dept}
@@ -207,52 +212,48 @@ export const DirectorDashboard: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-surface-border text-muted font-bold uppercase tracking-wider text-[11px]">
-                <th className="py-3 px-4">Department / Service Line</th>
-                <th className="py-3 px-4">Active Cases</th>
-                <th className="py-3 px-4">Verified Closed</th>
-                <th className="py-3 px-4">Loop Closure %</th>
-                <th className="py-3 px-4">Overdue Flag</th>
-                <th className="py-3 px-4">Escalations</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="border-b border-white/80 text-[#798393] font-bold uppercase tracking-wider text-[11px]">
+                <th className="py-3.5 px-4">Department / Service Line</th>
+                <th className="py-3.5 px-4">Active Cases</th>
+                <th className="py-3.5 px-4">Verified Closed</th>
+                <th className="py-3.5 px-4">Loop Closure %</th>
+                <th className="py-3.5 px-4">Overdue Flag</th>
+                <th className="py-3.5 px-4">Escalations</th>
+                <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-border">
+            <tbody className="divide-y divide-white/60">
               {departmentStats.map((row) => (
-                <tr key={row.department} className="hover:bg-mint-wash/30 transition-colors">
-                  <td className="py-4 px-4 font-bold text-teal-deep text-sm flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-teal-brand" />
+                <tr key={row.department} className="hover:bg-white/60 transition-colors">
+                  <td className="py-4 px-4 font-bold text-[#1E2532] text-sm flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#10B981]" />
                     {row.department}
                   </td>
-                  <td className="py-4 px-4 font-semibold text-body">{row.total}</td>
-                  <td className="py-4 px-4 font-semibold text-body">{row.closed}</td>
+                  <td className="py-4 px-4 font-semibold text-[#1E2532]">{row.total}</td>
+                  <td className="py-4 px-4 font-semibold text-[#1E2532]">{row.closed}</td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-24 bg-surface-border h-2 rounded-full overflow-hidden">
+                      <div className="w-24 bg-slate-200/60 h-2 rounded-full overflow-hidden">
                         <div
-                          className="bg-teal-brand h-full rounded-full transition-all"
+                          className="bg-gradient-to-r from-[#8B5CF6] to-[#10B981] h-full rounded-full transition-all"
                           style={{ width: `${row.closureRate}%` }}
                         />
                       </div>
-                      <span className="font-bold text-teal-deep">{row.closureRate}%</span>
+                      <span className="font-bold text-[#1E2532]">{row.closureRate}%</span>
                     </div>
                   </td>
                   <td className="py-4 px-4">
                     {row.overdue > 0 ? (
-                      <Badge variant="coral" className="text-[10px]">
-                        {row.overdue} Overdue
-                      </Badge>
+                      <StatusPill variant="coral" label={`${row.overdue} Overdue`} size="sm" />
                     ) : (
-                      <span className="text-muted font-medium">0</span>
+                      <span className="text-[#798393] font-medium">0</span>
                     )}
                   </td>
                   <td className="py-4 px-4">
                     {row.escalated > 0 ? (
-                      <Badge variant="amber" className="text-[10px]">
-                        {row.escalated} Escalated
-                      </Badge>
+                      <StatusPill variant="amber" label={`${row.escalated} Escalated`} size="sm" />
                     ) : (
-                      <span className="text-muted font-medium">0</span>
+                      <span className="text-[#798393] font-medium">0</span>
                     )}
                   </td>
                   <td className="py-4 px-4 text-right">
@@ -260,7 +261,7 @@ export const DirectorDashboard: React.FC = () => {
                       size="sm"
                       variant="outline"
                       onClick={() => navigate("/coordinator")}
-                      className="text-xs h-8 px-3 text-teal-deep border-surface-border hover:bg-mint-wash"
+                      className="text-xs h-8 px-3 text-[#1E2532] bg-white/80 border-white/90 hover:bg-white rounded-xl shadow-2xs font-semibold"
                     >
                       Inspect Queue
                       <ChevronRight className="w-3.5 h-3.5 ml-1" />
@@ -271,37 +272,33 @@ export const DirectorDashboard: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </GlassCard>
 
       {/* Critical Escalations Queue for Director Review */}
-      <div className="bg-surface-card border border-surface-border rounded-2xl p-6 shadow-2xs">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-surface-border">
+      <GlassCard className="p-6 rounded-[26px]">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/80">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-coral" />
-            <h2 className="text-lg font-extrabold text-teal-deep">Executive Escalation Watchlist</h2>
+            <AlertTriangle className="w-5 h-5 text-[#EF4444]" />
+            <h2 className="text-lg font-extrabold text-[#1E2532]">Executive Escalation Watchlist</h2>
           </div>
-          <Badge variant="coral" className="text-[11px]">
-            {escalatedCases.length} Critical Actions Pending
-          </Badge>
+          <StatusPill variant="coral" label={`${escalatedCases.length} Critical Pending`} size="sm" pulse />
         </div>
 
         <div className="space-y-3">
           {escalatedCases.slice(0, 5).map((c) => (
             <div
               key={c.id}
-              className="p-4 rounded-xl bg-surface-white border border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-teal-brand/40 transition-all"
+              className="p-4 rounded-2xl bg-white/70 border border-white/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/90 transition-all shadow-2xs"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-sm text-teal-deep">{c.patientName}</span>
-                  <span className="text-xs text-muted">({c.id})</span>
-                  <Badge variant={c.urgency === "urgent" ? "coral" : "amber"} className="text-[10px]">
-                    {c.screeningType}
-                  </Badge>
-                  <span className="text-xs text-muted font-medium">&bull; {c.department}</span>
+                  <span className="font-extrabold text-sm text-[#1E2532]">{c.patientName}</span>
+                  <span className="text-xs text-[#798393]">({c.id})</span>
+                  <StatusPill variant={c.urgency === "urgent" ? "coral" : "amber"} label={c.screeningType} size="sm" />
+                  <span className="text-xs text-[#798393] font-medium">&bull; {c.department}</span>
                 </div>
-                <p className="text-xs text-body font-medium">{c.resultValue}</p>
-                <p className="text-[11px] text-coral font-semibold flex items-center gap-1">
+                <p className="text-xs text-[#1E2532] font-medium">{c.resultValue}</p>
+                <p className="text-[11px] text-[#EF4444] font-semibold flex items-center gap-1">
                   <span>Current Bottleneck:</span>
                   <span>{c.nextAction}</span>
                 </p>
@@ -311,7 +308,7 @@ export const DirectorDashboard: React.FC = () => {
                 <Button
                   size="sm"
                   onClick={() => navigate(`/case/${c.id}`)}
-                  className="bg-teal-deep hover:bg-teal-brand text-white text-xs h-8 px-3 font-semibold"
+                  className="bg-white text-[#1E2532] hover:bg-white/90 border border-white/90 text-xs h-8 px-3 font-semibold rounded-xl shadow-xs"
                 >
                   Review Case
                   <ArrowUpRight className="w-3.5 h-3.5 ml-1" />
@@ -320,7 +317,7 @@ export const DirectorDashboard: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 };

@@ -56,7 +56,7 @@ export const CaseStepper = ({
             <div
               key={step.key}
               onClick={() => onStepClick && onStepClick(step, index)}
-              className={`flex-1 flex flex-col items-center group relative z-10 cursor-pointer ${
+              className={`flex-1 flex flex-col items-center group relative z-10 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 ${
                 isSkipped ? "opacity-45" : ""
               }`}
             >
@@ -67,16 +67,16 @@ export const CaseStepper = ({
 
               {/* Step Circle Node */}
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 shadow-xs ${
+                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 shadow-xs group-hover:scale-110 group-hover:shadow-md will-change-transform ${
                   isCompleted
-                    ? "bg-teal-brand border-teal-brand text-white"
+                    ? "bg-teal-brand border-teal-brand text-white group-hover:bg-[#059669]"
                     : isOverdue
                     ? "bg-coral text-white border-coral animate-bounce"
                     : isActive
-                    ? "bg-mint-wash border-teal-brand text-teal-brand ring-4 ring-teal-brand/20"
+                    ? "bg-mint-wash border-teal-brand text-teal-brand ring-4 ring-teal-brand/20 group-hover:ring-teal-brand/35"
                     : isSkipped
-                    ? "bg-surface-white border-dashed border-muted/50 text-muted"
-                    : "bg-surface-card border-surface-border text-muted"
+                    ? "bg-surface-white border-dashed border-muted/50 text-muted group-hover:border-slate-400"
+                    : "bg-surface-card border-surface-border text-muted group-hover:border-slate-400 group-hover:text-slate-800"
                 }`}
               >
                 {isCompleted ? (
@@ -89,14 +89,14 @@ export const CaseStepper = ({
               {/* Label & Meta */}
               <div className="mt-2.5 text-center px-1">
                 <p
-                  className={`text-xs font-semibold leading-tight line-clamp-2 ${
+                  className={`text-xs font-semibold leading-tight line-clamp-2 transition-colors ${
                     isCompleted
-                      ? "text-teal-deep"
+                      ? "text-teal-deep group-hover:text-slate-950 font-bold"
                       : isActive
                       ? "text-teal-brand font-bold"
                       : isOverdue
                       ? "text-coral font-bold"
-                      : "text-muted"
+                      : "text-muted group-hover:text-[#1E2532]"
                   }`}
                 >
                   {step.label}

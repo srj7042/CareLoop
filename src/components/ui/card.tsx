@@ -6,7 +6,11 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("rounded-card border border-surface-border bg-surface-card shadow-sm", className)}
+    data-card="ui-card"
+    className={cn(
+      "rounded-card border border-surface-border bg-surface-card shadow-[0_12px_32px_rgba(100,115,140,0.06)] backdrop-blur-md transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(100,115,140,0.12)] hover:border-white hover:bg-white/90 will-change-transform",
+      className
+    )}
     {...props}
   />
 ));
@@ -22,7 +26,7 @@ export interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement>
 const CardTitle = React.forwardRef<HTMLHeadingElement, CardTitleProps>(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn("text-2xl font-semibold leading-none tracking-tight text-teal-deep", className)}
+    className={cn("text-2xl font-semibold leading-none tracking-tight text-[#1E2532]", className)}
     {...props}
   />
 ));

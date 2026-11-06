@@ -24,8 +24,8 @@ export const LoopRing = ({
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="rotate-[-90deg]">
         <defs>
           <linearGradient id="loopGradientRing" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#DFCBB5" />
-            <stop offset="100%" stopColor="#965F2B" />
+            <stop offset="0%" stopColor="#C6DDD3" />
+            <stop offset="100%" stopColor="#609983" />
           </linearGradient>
         </defs>
 
@@ -35,7 +35,7 @@ export const LoopRing = ({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#E8DFD3"
+          stroke="#E8ECE9"
           strokeWidth={strokeWidth}
         />
 

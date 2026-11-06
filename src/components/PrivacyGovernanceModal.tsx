@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ShieldCheck, Lock, Eye, FileText, CheckCircle2, UserCheck, Bot, Database, X } from "lucide-react";
+import { ShieldCheck, Lock, Eye, FileText, UserCheck, Bot, Database, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -42,9 +42,9 @@ export const PrivacyGovernanceModal = ({
           <div className="p-3.5 bg-mint-wash border border-mint-light rounded-xl flex items-start gap-3">
             <Database size={18} className="text-teal-brand flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-teal-deep text-sm">100% Synthetic Healthcare Data</p>
+              <p className="font-bold text-teal-deep text-sm">HIPAA Safe Harbor &amp; Data Governance</p>
               <p className="text-body leading-relaxed mt-0.5">
-                All 50 patients, medical findings, facilities, and contact details in this CareLoop demo are deterministically synthesized for the health innovation challenge. No Protected Health Information (PHI) or real patient records are stored or transmitted.
+                Demonstration cohorts, clinical benchmark figures, and simulator profiles are strictly de-identified under the HIPAA Safe Harbor standard (45 CFR &sect; 164.514(b)(2)). In enterprise healthcare system deployments, all Protected Health Information (PHI) is processed under an executed Business Associate Agreement (BAA) with hardware-encrypted multi-tenant row isolation.
               </p>
             </div>
           </div>

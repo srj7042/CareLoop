@@ -14,13 +14,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   LogOut,
-  ChevronRight,
-  Activity,
-  FileCheck2,
-  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useStore } from "@/lib/store";
 import { ROLE_PERMISSIONS } from "@/lib/permissions";
 import { ProfileModal } from "@/components/ProfileModal";
@@ -175,19 +170,19 @@ export const Layout: React.FC = () => {
   const roleConfig = currentRole ? ROLE_PERMISSIONS[currentRole] : null;
 
   return (
-    <div className="min-h-screen bg-surface-white text-body flex font-sans antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-transparent text-[#1E2532] flex font-sans antialiased overflow-x-hidden">
       {/* Mobile Drawer Overlay */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-40 bg-teal-deep/60 backdrop-blur-2xs lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-xs lg:hidden transition-opacity"
           aria-hidden="true"
         />
       )}
 
-      {/* Persistent Collapsible Sidebar - Dedicated Light Brown & Cream */}
+      {/* Persistent Collapsible Sidebar - Frosted Glassmorphism */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 bg-[#7B4D24] text-[#FAF6F0] border-r border-[#663E1A] transition-all duration-300 ease-in-out flex flex-col justify-between shadow-lg ${
+        className={`fixed top-0 bottom-0 left-0 z-40 bg-white/75 backdrop-blur-xl border-r border-white/80 transition-all duration-300 ease-in-out flex flex-col justify-between shadow-[0_12px_32px_rgba(100,115,140,0.06)] ${
           // Mobile state
           sidebarOpen ? "translate-x-0 w-64 shadow-2xl" : "-translate-x-full lg:translate-x-0"
         } ${
@@ -196,20 +191,20 @@ export const Layout: React.FC = () => {
         }`}
       >
         {/* Sidebar Brand Header */}
-        <div className="h-16 px-4 border-b border-[#663E1A] flex items-center justify-between flex-shrink-0 bg-[#6E421D]">
+        <div className="h-16 px-4 border-b border-white/80 flex items-center justify-between flex-shrink-0 bg-white/40 backdrop-blur-md">
           <Link
             to={roleConfig?.defaultPath || "/"}
-            className="flex items-center gap-2.5 overflow-hidden"
+            className="flex items-center gap-2.5 overflow-hidden group"
             title="CareLoop AI Healthcare"
           >
-            <div className="w-9 h-9 rounded-xl bg-[#FAF6F0] flex items-center justify-center text-[#7B4D24] font-black flex-shrink-0 shadow-sm">
-              <HeartPulse className="w-5 h-5 text-[#7B4D24]" />
+            <div className="w-9 h-9 rounded-2xl bg-white border border-white/80 flex items-center justify-center text-[#1E2532] font-black flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+              <HeartPulse className="w-5 h-5 text-[#10B981]" strokeWidth={2} />
             </div>
 
             {!isCollapsed && (
               <div className="flex flex-col truncate leading-tight">
-                <span className="font-extrabold text-sm tracking-tight text-white">CareLoop</span>
-                <span className="text-[10px] text-[#F3E2D2] font-medium truncate">
+                <span className="font-extrabold text-sm tracking-tight text-[#1E2532]">CareLoop</span>
+                <span className="text-[10px] text-[#798393] font-medium truncate">
                   {currentUser?.organizationName || "Clinical OS"}
                 </span>
               </div>
@@ -219,48 +214,18 @@ export const Layout: React.FC = () => {
           {/* Mobile close drawer button */}
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-[#F3E2D2] hover:text-white p-1 rounded-lg ml-auto"
+            className="lg:hidden text-[#798393] hover:text-[#1E2532] p-1.5 rounded-xl hover:bg-white/60 transition-colors ml-auto"
             aria-label="Close sidebar"
           >
-            <X size={18} />
+            <X size={18} strokeWidth={1.75} />
           </button>
         </div>
 
-        {/* User Profile Context Strip in Sidebar */}
-        <div
-          onClick={() => setProfileOpen(true)}
-          className={`p-3 border-b border-[#663E1A] bg-[#663E1A]/60 hover:bg-[#5E3615] cursor-pointer transition-colors flex items-center gap-3 ${
-            isCollapsed ? "justify-center" : ""
-          }`}
-          title="View profile details"
-        >
-          <div className="w-8 h-8 rounded-full bg-[#FAF6F0] text-[#7B4D24] font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs">
-            {currentUser?.name?.charAt(0) || "U"}
-          </div>
-
-          {!isCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white truncate">{currentUser?.name}</p>
-              <div className="flex items-center gap-1.5 text-[10px] text-[#F3E2D2] truncate">
-                <span className="capitalize text-[#FFE3C8] font-bold">
-                  {roleConfig?.roleTitle || currentUser?.role}
-                </span>
-                {currentUser?.department && (
-                  <>
-                    <span>&bull;</span>
-                    <span className="truncate">{currentUser.department}</span>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Navigation Links Area */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-1">
+        <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
           {!isCollapsed && (
-            <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#F3E2D2]/70">
-              Navigation Workspace
+            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#798393]/80">
+              Workspace
             </div>
           )}
 
@@ -282,13 +247,17 @@ export const Layout: React.FC = () => {
               <div key={item.label} className="relative group">
                 <Link
                   to={item.path}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? "bg-[#FAF6F0] text-[#633917] font-extrabold shadow-md shadow-black/10"
-                      : "text-[#F5EBE1] hover:text-white hover:bg-[#663E1A]/80"
+                      ? "bg-white text-slate-800 shadow-sm border border-white/90 font-bold"
+                      : "text-[#798393] hover:text-[#1E2532] hover:bg-white/60"
                   } ${isCollapsed ? "justify-center px-0" : ""}`}
                 >
-                  <Icon size={18} className="flex-shrink-0" />
+                  <Icon
+                    size={18}
+                    strokeWidth={1.75}
+                    className={`flex-shrink-0 ${isActive ? "text-[#10B981]" : "text-[#798393]"}`}
+                  />
 
                   {!isCollapsed && (
                     <>
@@ -297,8 +266,8 @@ export const Layout: React.FC = () => {
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                             isActive
-                              ? "bg-[#7B4D24] text-[#FAF6F0]"
-                              : "bg-[#663E1A] text-[#FFE8D6]"
+                              ? "bg-[#10B981]/15 text-[#065F46]"
+                              : "bg-white/80 text-[#798393] border border-white/80"
                           }`}
                         >
                           {item.badge}
@@ -310,7 +279,7 @@ export const Layout: React.FC = () => {
 
                 {/* Collapsed Mode Tooltip */}
                 {isCollapsed && (
-                  <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-[#4A2C12] text-[#FAF6F0] text-xs font-semibold rounded-lg shadow-xl whitespace-nowrap z-50 border border-[#663E1A]">
+                  <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-900/80 backdrop-blur-md text-white text-xs font-semibold rounded-xl shadow-xl whitespace-nowrap z-50 border border-white/10">
                     {item.label}
                     {item.badge && ` (${item.badge})`}
                   </div>
@@ -320,22 +289,52 @@ export const Layout: React.FC = () => {
           })}
         </div>
 
-        {/* Sidebar Footer Controls */}
-        <div className="p-3 border-t border-[#663E1A] space-y-1 bg-[#6E421D]">
+        {/* Sidebar Footer: User Profile & Governance Controls */}
+        <div className="p-3 border-t border-white/80 space-y-1.5 bg-white/40 backdrop-blur-md">
+          {/* User Profile Context Button in Lower Left Sidebar */}
+          <div className="relative group">
+            <button
+              onClick={() => setProfileOpen(true)}
+              className={`w-full p-2 rounded-2xl bg-white/60 hover:bg-white/90 border border-white/80 shadow-xs cursor-pointer transition-all flex items-center gap-3 text-left ${
+                isCollapsed ? "justify-center px-0" : ""
+              }`}
+              title="View & Edit Personal Profile"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#10B981] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs">
+                {currentUser?.name?.charAt(0) || "U"}
+              </div>
+
+              {!isCollapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-[#1E2532] truncate">{currentUser?.name}</p>
+                  <p className="text-[10px] text-[#798393] capitalize truncate font-medium">
+                    {roleConfig?.roleTitle || currentUser?.role}
+                  </p>
+                </div>
+              )}
+            </button>
+
+            {isCollapsed && (
+              <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-900/80 backdrop-blur-md text-white text-xs font-semibold rounded-xl shadow-xl whitespace-nowrap z-50 border border-white/10">
+                {currentUser?.name} &bull; {roleConfig?.roleTitle || currentUser?.role}
+              </div>
+            )}
+          </div>
+
           {/* Privacy & Governance Modal Button */}
           <div className="relative group">
             <button
               onClick={() => setPrivacyOpen(true)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-[#F3E2D2] hover:text-white hover:bg-[#5E3615] transition-colors ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-[#798393] hover:text-[#1E2532] hover:bg-white/60 transition-colors ${
                 isCollapsed ? "justify-center px-0" : ""
               }`}
               title="Clinical Privacy & Safety Governance"
             >
-              <ShieldCheck size={16} className="text-[#FFE3C8] flex-shrink-0" />
+              <ShieldCheck size={16} strokeWidth={1.75} className="text-[#10B981] flex-shrink-0" />
               {!isCollapsed && <span>Clinical Governance</span>}
             </button>
             {isCollapsed && (
-              <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-[#4A2C12] text-[#FAF6F0] text-xs font-semibold rounded-lg shadow-xl whitespace-nowrap z-50 border border-[#663E1A]">
+              <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-900/80 backdrop-blur-md text-white text-xs font-semibold rounded-xl shadow-xl whitespace-nowrap z-50 border border-white/10">
                 Clinical Governance
               </div>
             )}
@@ -345,16 +344,16 @@ export const Layout: React.FC = () => {
           <div className="relative group">
             <button
               onClick={handleLogout}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-[#FFCDC4] hover:text-white hover:bg-[#5E1F17] transition-colors ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 transition-colors ${
                 isCollapsed ? "justify-center px-0" : ""
               }`}
               title="Log Out of CareLoop"
             >
-              <LogOut size={16} className="flex-shrink-0" />
+              <LogOut size={16} strokeWidth={1.75} className="flex-shrink-0 text-rose-500" />
               {!isCollapsed && <span>Sign Out</span>}
             </button>
             {isCollapsed && (
-              <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-[#5E1F17] text-[#FFCDC4] text-xs font-semibold rounded-lg shadow-xl whitespace-nowrap z-50 border border-[#852C22]">
+              <div className="opacity-0 group-hover:opacity-100 pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-rose-600 text-white text-xs font-semibold rounded-xl shadow-xl whitespace-nowrap z-50">
                 Sign Out
               </div>
             )}
@@ -369,73 +368,46 @@ export const Layout: React.FC = () => {
         }`}
       >
         {/* Top Navbar */}
-        <header className="h-16 px-4 md:px-6 border-b border-surface-border bg-surface-card/90 backdrop-blur-md flex items-center justify-between flex-shrink-0 z-30 sticky top-0">
+        <header className="h-16 px-4 md:px-6 border-b border-white/80 bg-white/70 backdrop-blur-md flex items-center justify-between flex-shrink-0 z-30 sticky top-0 shadow-[0_4px_20px_rgba(100,115,140,0.03)]">
           <div className="flex items-center gap-3">
             {/* Mobile Sidebar Hamburger Toggle */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-teal-deep hover:bg-mint-wash p-2 rounded-lg transition-colors"
+              className="lg:hidden text-[#1E2532] hover:bg-white/80 p-2 rounded-xl transition-colors border border-transparent hover:border-white/80"
               aria-label="Open sidebar menu"
             >
-              <Menu size={20} />
+              <Menu size={20} strokeWidth={1.75} />
             </button>
 
             {/* Desktop Sidebar Collapse / Expand Quick Toggle */}
             <button
               onClick={toggleCollapse}
-              className="hidden lg:flex items-center justify-center p-2 rounded-lg text-teal-deep hover:bg-mint-wash transition-colors"
+              className="hidden lg:flex items-center justify-center p-2 rounded-xl text-[#798393] hover:text-[#1E2532] hover:bg-white/80 border border-transparent hover:border-white/80 transition-colors cursor-pointer"
               title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-              {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+              {isCollapsed ? <PanelLeftOpen size={18} strokeWidth={1.75} /> : <PanelLeftClose size={18} strokeWidth={1.75} />}
             </button>
 
             {/* Organization / Context Title */}
             <div className="flex flex-col">
-              <span className="font-extrabold text-sm text-teal-deep flex items-center gap-2">
+              <span className="font-extrabold text-sm text-[#1E2532]">
                 {currentUser?.organizationName || "CareLoop Healthcare"}
-                {currentUser?.department && (
-                  <span className="text-xs text-muted font-normal">
-                    &bull; {currentUser.department}
-                  </span>
-                )}
-              </span>
-              <span className="text-[11px] text-muted font-medium hidden sm:inline">
-                {roleConfig?.roleTitle} Workspace
               </span>
             </div>
           </div>
 
           {/* Right Header Actions */}
           <div className="flex items-center gap-3">
-            {/* User Profile Chip */}
-            <button
-              onClick={() => setProfileOpen(true)}
-              className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-full bg-surface-white border border-surface-border hover:border-teal-brand/50 transition-all text-left"
-              title="Click to view full user credentials and organization metadata"
-            >
-              <div className="w-6 h-6 rounded-full bg-teal-brand/10 text-teal-brand font-black text-xs flex items-center justify-center flex-shrink-0">
-                {currentUser?.name?.charAt(0) || "U"}
-              </div>
-              <div className="hidden sm:block">
-                <span className="text-xs font-bold text-teal-deep block leading-tight">
-                  {currentUser?.name}
-                </span>
-                <span className="text-[10px] text-muted block capitalize leading-tight">
-                  {roleConfig?.roleTitle || currentUser?.role}
-                </span>
-              </div>
-            </button>
-
             {/* Top Bar Log Out */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="text-xs border-surface-border text-muted hover:text-coral hover:bg-coral/10 font-semibold h-8 px-2.5 hidden sm:flex items-center gap-1.5"
+              className="text-xs bg-white/70 border-white/80 text-[#798393] hover:text-rose-600 hover:bg-rose-50/80 font-semibold h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-2xs"
               title="Log Out of CareLoop"
             >
-              <LogOut size={13} />
+              <LogOut size={13} strokeWidth={1.75} />
               <span>Log Out</span>
             </Button>
           </div>
@@ -447,14 +419,14 @@ export const Layout: React.FC = () => {
         </main>
 
         {/* Persistent Micro-Footer */}
-        <footer className="h-9 px-4 md:px-6 bg-surface-card border-t border-surface-border/60 text-[11px] text-muted flex items-center justify-between flex-shrink-0 z-20">
+        <footer className="h-9 px-4 md:px-6 bg-white/50 backdrop-blur-xs border-t border-white/70 text-[11px] text-[#798393] flex items-center justify-between flex-shrink-0 z-20">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-teal-deep">CareLoop AI</span>
+            <span className="font-semibold text-[#1E2532]">CareLoop AI</span>
             <span className="hidden sm:inline">&bull; Closing the Screening-to-Care Loop</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="hidden md:inline">Zero Autonomous Closure &bull; Human Clinician Sign-Off Enforced</span>
-            <span>HIPAA Compliant</span>
+            <span className="font-medium text-[#10B981]">HIPAA Compliant</span>
           </div>
         </footer>
       </div>

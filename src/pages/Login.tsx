@@ -2,12 +2,6 @@ import * as React from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   ShieldCheck,
-  Users,
-  Stethoscope,
-  SendHorizontal,
-  BarChart3,
-  User as UserIcon,
-  ArrowRight,
   Lock,
   HeartPulse,
   Mail,
@@ -15,13 +9,16 @@ import {
   AlertCircle,
   Building2,
   Check,
-  ChevronRight,
-  Info,
   Eye,
   EyeOff,
+  X,
+  Sparkles,
+  Info,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { GlassCard, StatusPill } from "@/components/design-system";
 import { useStore } from "@/lib/store";
 import { authenticateUser, REGISTERED_ACCOUNTS } from "@/lib/auth";
 import { ROLE_PERMISSIONS, isPathAllowedForRole, getDefaultPathForRole } from "@/lib/permissions";
@@ -37,6 +34,21 @@ export const Login: React.FC = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
+
+  // Modals state
+  const [isForgotModalOpen, setIsForgotModalOpen] = React.useState(false);
+  const [forgotEmail, setForgotEmail] = React.useState("");
+  const [forgotStatus, setForgotStatus] = React.useState<"idle" | "submitting" | "sent">("idle");
+
+  const [isPilotModalOpen, setIsPilotModalOpen] = React.useState(false);
+  const [pilotForm, setPilotForm] = React.useState({
+    name: "",
+    email: "",
+    hospital: "",
+    role: "Chief Medical Officer",
+    notes: "",
+  });
+  const [pilotStatus, setPilotStatus] = React.useState<"idle" | "submitting" | "sent">("idle");
 
   const fromPath = (location.state as any)?.from?.pathname;
 
@@ -86,34 +98,48 @@ export const Login: React.FC = () => {
     setErrorMessage("");
   };
 
+  const handleForgotSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotStatus("submitting");
+    setTimeout(() => {
+      setForgotStatus("sent");
+    }, 700);
+  };
+
+  const handlePilotSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPilotStatus("submitting");
+    setTimeout(() => {
+      setPilotStatus("sent");
+    }, 900);
+  };
+
   return (
-    <div className="min-h-screen bg-[#FAF6F0] text-[#36271E] flex flex-col justify-between font-sans selection:bg-[#965F2B]/20 selection:text-[#965F2B]">
-      {/* Light Brown & Cream Header */}
-      <header className="h-20 px-6 sm:px-10 border-b border-[#EADFCF] bg-[#FFFDF9]/95 backdrop-blur-md flex items-center justify-between shadow-xs sticky top-0 z-30">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#965F2B] to-[#5C3817] flex items-center justify-center shadow-md shadow-[#965F2B]/20">
-            <HeartPulse className="w-5 h-5 text-white" />
+    <div className="min-h-screen bg-transparent text-[#1E2532] flex flex-col justify-between font-sans">
+      {/* Frosted Glass Header */}
+      <header className="h-20 px-6 sm:px-10 border-b border-white/80 bg-white/70 backdrop-blur-md flex items-center justify-between shadow-xs sticky top-0 z-30">
+        <Link to="/" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 rounded-2xl bg-white border border-white/80 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+            <HeartPulse className="w-5 h-5 text-[#10B981]" strokeWidth={2} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xl tracking-tight text-[#332219]">CareLoop</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#F4ECE1] text-[#965F2B] border border-[#DFCBB5] tracking-wider">
-                AI HEALTH
-              </span>
+              <span className="font-extrabold text-xl tracking-tight text-[#1E2532]">CareLoop</span>
+              <StatusPill variant="mint" label="AI HEALTH" size="sm" />
             </div>
-            <p className="text-[11px] text-[#7B685B] font-medium">Screening-to-Care Orchestration</p>
+            <p className="text-[11px] text-[#798393] font-medium">Screening-to-Care Orchestration</p>
           </div>
         </Link>
 
         <div className="flex items-center gap-4">
           <Link
             to="/"
-            className="text-xs text-[#7B685B] hover:text-[#332219] font-semibold transition-colors hidden sm:inline"
+            className="text-xs text-[#798393] hover:text-[#1E2532] font-semibold transition-colors hidden sm:inline"
           >
             &larr; Back to Public Overview
           </Link>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F4ECE1] border border-[#DFCBB5] text-xs font-semibold text-[#332219] shadow-2xs">
-            <ShieldCheck className="w-4 h-4 text-[#965F2B]" />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-white/80 text-xs font-semibold text-[#1E2532] shadow-2xs backdrop-blur-xs">
+            <ShieldCheck className="w-4 h-4 text-[#10B981]" />
             <span>Secure Clinical Session</span>
           </div>
         </div>
@@ -123,71 +149,83 @@ export const Login: React.FC = () => {
       <main className="flex-1 flex items-center justify-center px-4 py-10 sm:py-14">
         <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left: Login Card */}
-          <div className="lg:col-span-6 bg-white border border-[#EADFCF] rounded-3xl p-8 sm:p-10 shadow-xl shadow-[#332219]/5">
+          <GlassCard className="lg:col-span-6 p-8 sm:p-10 rounded-[28px] shadow-[0_16px_36px_rgba(100,115,140,0.08)]">
             <div className="mb-6">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#965F2B] uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#F4ECE1] border border-[#DFCBB5] mb-3">
-                <Lock className="w-3.5 h-3.5" />
-                Authorized Clinical Access
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-black text-[#332219] tracking-tight mb-2">
+              <div className="mb-3">
+                <StatusPill variant="lavender" label="Authorized Clinical Access" size="sm" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black text-[#1E2532] tracking-tight mb-2">
                 Sign In to CareLoop
               </h1>
-              <p className="text-xs sm:text-sm text-[#7B685B] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#798393] leading-relaxed">
                 Enter your authorized clinical email and secure password to access your role-specific healthcare dashboard.
               </p>
             </div>
 
             {errorMessage && (
-              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-bold text-[#332219] uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#1E2532] uppercase tracking-wider mb-2">
                   Clinical Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="w-5 h-5 text-[#965F2B] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Mail className="w-5 h-5 text-[#8B5CF6] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="email"
                     required
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     placeholder="user@healthsystem.org"
-                    className="w-full pl-11 pr-4 h-12 bg-white border-2 border-[#EADFCF] focus:border-[#965F2B] focus:ring-3 focus:ring-[#965F2B]/15 rounded-xl text-sm font-semibold text-[#332219] placeholder:text-[#A8988B] transition-all outline-none"
+                    className="w-full pl-11 pr-4 h-12 bg-white/90 border border-white/80 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 rounded-2xl text-sm font-semibold text-[#1E2532] placeholder:text-[#798393] transition-all outline-none shadow-2xs"
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-bold text-[#332219] uppercase tracking-wider">
+                  <label className="block text-xs font-bold text-[#1E2532] uppercase tracking-wider">
                     Password
                   </label>
-                  <span className="text-xs text-[#965F2B] font-bold bg-[#F4ECE1] px-2 py-0.5 rounded-full border border-[#DFCBB5]">
+                  <span className="text-xs text-[#8B5CF6] font-bold bg-[#8B5CF6]/10 px-2.5 py-0.5 rounded-full border border-[#8B5CF6]/20">
                     Default: careloop2026
                   </span>
                 </div>
                 <div className="relative">
-                  <KeyRound className="w-5 h-5 text-[#965F2B] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <KeyRound className="w-5 h-5 text-[#8B5CF6] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type={showPassword ? "text" : "password"}
                     required
                     value={passwordInput}
                     onChange={(e) => setPasswordInput(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full pl-11 pr-11 h-12 bg-white border-2 border-[#EADFCF] focus:border-[#965F2B] focus:ring-3 focus:ring-[#965F2B]/15 rounded-xl text-sm font-semibold text-[#332219] placeholder:text-[#A8988B] transition-all outline-none"
+                    className="w-full pl-11 pr-11 h-12 bg-white/90 border border-white/80 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 rounded-2xl text-sm font-semibold text-[#1E2532] placeholder:text-[#798393] transition-all outline-none shadow-2xs"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#7B685B] hover:text-[#332219] p-1 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#798393] hover:text-[#1E2532] p-1 transition-colors cursor-pointer"
                     title={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <div className="flex justify-end mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotEmail(emailInput);
+                      setForgotStatus("idle");
+                      setIsForgotModalOpen(true);
+                    }}
+                    className="text-xs font-semibold text-[#8B5CF6] hover:text-[#7C3AED] hover:underline cursor-pointer"
+                  >
+                    Forgot Password or SSO Token?
                   </button>
                 </div>
               </div>
@@ -195,7 +233,7 @@ export const Login: React.FC = () => {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 bg-[#332219] hover:bg-[#5C3F2E] text-white font-extrabold text-sm rounded-xl shadow-md shadow-[#332219]/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full h-12 bg-[#1E2532] hover:bg-slate-800 text-white font-extrabold text-sm rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
@@ -211,24 +249,38 @@ export const Login: React.FC = () => {
               </Button>
             </form>
 
-            <div className="mt-6 pt-5 border-t border-[#EADFCF] text-[11px] text-[#7B685B] flex items-center justify-between font-medium">
-              <span>Authorized personnel only</span>
-              <span>8-hour session token</span>
+            <div className="mt-6 pt-5 border-t border-white/80 space-y-3">
+              <div className="flex items-center justify-between text-[11px] text-[#798393] font-medium">
+                <span>Authorized clinical personnel only</span>
+                <span>8-hour session token</span>
+              </div>
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPilotStatus("idle");
+                    setIsPilotModalOpen(true);
+                  }}
+                  className="text-xs text-[#8B5CF6] hover:text-[#7C3AED] font-bold hover:underline cursor-pointer"
+                >
+                  Need access for your hospital system? Request an Enterprise Pilot &rarr;
+                </button>
+              </div>
             </div>
-          </div>
+          </GlassCard>
 
           {/* Right: Quick Verification Accounts Directory */}
-          <div className="lg:col-span-6 bg-white border border-[#EADFCF] rounded-3xl p-6 sm:p-8 shadow-xl shadow-[#332219]/5">
-            <div className="flex items-center gap-2 mb-2 text-[#332219]">
-              <div className="w-7 h-7 rounded-lg bg-[#F4ECE1] text-[#965F2B] flex items-center justify-center">
+          <GlassCard className="lg:col-span-6 p-6 sm:p-8 rounded-[28px] shadow-[0_16px_36px_rgba(100,115,140,0.08)]">
+            <div className="flex items-center gap-2 mb-2 text-[#1E2532]">
+              <div className="w-8 h-8 rounded-xl bg-[#8B5CF6]/15 text-[#8B5CF6] flex items-center justify-center">
                 <Info className="w-4 h-4" />
               </div>
               <h2 className="text-sm font-extrabold tracking-tight uppercase">
                 Registered Authorized Accounts
               </h2>
             </div>
-            <p className="text-xs text-[#7B685B] mb-5 leading-relaxed">
-              Click any account below to pre-populate clinical credentials for instant verification. Each account accesses only its authorized role and organization data.
+            <p className="text-xs text-[#798393] mb-5 leading-relaxed">
+              Click any account below to pre-populate clinical credentials for instant verification.
             </p>
 
             <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
@@ -238,53 +290,270 @@ export const Login: React.FC = () => {
                   <div
                     key={account.id}
                     onClick={() => handlePreFill(account.email)}
-                    className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                    className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-md ${
                       isSelected
-                        ? "bg-[#F4ECE1] border-2 border-[#965F2B] shadow-xs"
-                        : "bg-[#FAF6F0] border-[#EADFCF] hover:border-[#965F2B]/50 hover:bg-[#F5ECE1]"
+                        ? "bg-white border-2 border-[#8B5CF6] shadow-sm"
+                        : "bg-white/70 border-white/80 hover:bg-white hover:border-[#8B5CF6]/50"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-[#332219]">{account.name}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white text-[#332219] font-bold border border-[#EADFCF] shadow-2xs">
-                          {ROLE_PERMISSIONS[account.role]?.roleTitle || account.role}
-                        </span>
+                        <span className="font-extrabold text-sm text-[#1E2532]">{account.name}</span>
+                        <StatusPill
+                          variant={isSelected ? "lavender" : "slate"}
+                          label={ROLE_PERMISSIONS[account.role]?.roleTitle || account.role}
+                          size="sm"
+                        />
                       </div>
                       {isSelected && (
-                        <span className="flex items-center gap-1 text-[11px] font-extrabold text-[#965F2B]">
+                        <span className="flex items-center gap-1 text-[11px] font-extrabold text-[#8B5CF6]">
                           <Check className="w-3.5 h-3.5" />
                           Selected
                         </span>
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#7B685B]">
-                      <span className="font-mono text-[#332219] font-semibold">{account.email}</span>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#798393]">
+                      <span className="font-mono text-[#1E2532] font-semibold">{account.email}</span>
                       <span>&bull;</span>
-                      <span className="font-medium text-[#7B685B]">{account.organizationName}</span>
+                      <span className="font-medium text-[#798393]">{account.organizationName}</span>
                     </div>
 
-                    <div className="mt-1 text-[11px] text-[#7B685B]">
+                    <div className="mt-1 text-[11px] text-[#798393]">
                       {ROLE_PERMISSIONS[account.role]?.roleSubtitle}
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
+          </GlassCard>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="h-16 px-6 sm:px-10 border-t border-[#EADFCF] bg-[#FFFDF9] text-xs text-[#7B685B] flex flex-col sm:flex-row items-center justify-between gap-2">
+      {/* Forgot Password Modal */}
+      {isForgotModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-sm">
+          <div className="bg-white/95 backdrop-blur-xl rounded-[28px] border border-white/80 max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/80">
+              <div className="flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-[#8B5CF6]" />
+                <h3 className="font-bold text-base text-[#1E2532]">Password Recovery &amp; SSO</h3>
+              </div>
+              <button
+                onClick={() => setIsForgotModalOpen(false)}
+                className="text-[#798393] hover:text-[#1E2532] p-1 rounded-xl"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {forgotStatus === "sent" ? (
+              <div className="p-4 rounded-2xl bg-[#10B981]/10 border border-[#10B981]/25 text-[#065F46] space-y-3">
+                <div className="flex items-center gap-2 font-bold text-sm">
+                  <CheckCircle2 className="w-5 h-5 text-[#10B981]" />
+                  <span>Recovery Instructions Dispatched</span>
+                </div>
+                <p className="text-xs leading-relaxed">
+                  If <strong>{forgotEmail}</strong> matches an active authorized clinical profile, password reset instructions and institutional SSO tokens have been sent to that inbox.
+                </p>
+                <Button
+                  onClick={() => setIsForgotModalOpen(false)}
+                  className="w-full bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold h-10 rounded-xl"
+                >
+                  Return to Sign In
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotSubmit} className="space-y-4">
+                <p className="text-xs text-[#798393] leading-relaxed">
+                  Enter your registered institutional or hospital email address. You will receive a time-bound verification link to reset your password or reconnect your SAML 2.0 / Okta credentials.
+                </p>
+                <div>
+                  <label className="block text-xs font-bold text-[#1E2532] uppercase tracking-wider mb-1.5">
+                    Institutional Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="doctor@apexhealth.org"
+                    className="w-full px-3.5 h-10 bg-white border border-white/80 focus:border-[#8B5CF6] rounded-xl text-xs font-semibold text-[#1E2532] outline-none shadow-2xs"
+                  />
+                </div>
+                <div className="p-3.5 rounded-xl bg-white/70 border border-white/80 text-[11px] text-[#798393]">
+                  <strong>Clinical Note:</strong> For high-urgency operational lockouts, contact your hospital IT department or CareLoop 24/7 pager at <strong>it-escalation@careloop.health</strong>.
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setIsForgotModalOpen(false)}
+                    className="text-xs h-9 px-4 rounded-xl text-[#798393]"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={forgotStatus === "submitting"}
+                    className="bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-bold h-9 px-5 rounded-xl shadow-xs"
+                  >
+                    {forgotStatus === "submitting" ? "Sending..." : "Send Reset Link"}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Request Pilot Modal */}
+      {isPilotModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-sm">
+          <div className="bg-white/95 backdrop-blur-xl rounded-[28px] border border-white/80 max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/80">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-[#8B5CF6]" />
+                <h3 className="font-bold text-base text-[#1E2532]">Request Enterprise Hospital Pilot</h3>
+              </div>
+              <button
+                onClick={() => setIsPilotModalOpen(false)}
+                className="text-[#798393] hover:text-[#1E2532] p-1 rounded-xl"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {pilotStatus === "sent" ? (
+              <div className="p-4 rounded-2xl bg-[#10B981]/10 border border-[#10B981]/25 text-[#065F46] space-y-3">
+                <div className="flex items-center gap-2 font-bold text-sm">
+                  <CheckCircle2 className="w-5 h-5 text-[#10B981]" />
+                  <span>Pilot Application Received</span>
+                </div>
+                <p className="text-xs leading-relaxed">
+                  Thank you, <strong>{pilotForm.name}</strong>. Our Clinical Integration team will review your organization ({pilotForm.hospital}) and contact you within 1 business day to schedule a FHIR/EHR sandbox trial.
+                </p>
+                <Button
+                  onClick={() => setIsPilotModalOpen(false)}
+                  className="w-full bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold h-10 rounded-xl"
+                >
+                  Close
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handlePilotSubmit} className="space-y-3.5">
+                <p className="text-xs text-[#798393] leading-relaxed">
+                  Deploy CareLoop across your cancer center or multi-hospital radiology network with HIPAA BAA compliance and Epic/Cerner bi-directional integration.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#1E2532] uppercase tracking-wider mb-1">
+                      Your Full Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={pilotForm.name}
+                      onChange={(e) => setPilotForm({ ...pilotForm, name: e.target.value })}
+                      placeholder="Dr. Katherine Ellis"
+                      className="w-full px-3 h-9 bg-white border border-white/80 rounded-xl text-xs font-semibold text-[#1E2532] outline-none shadow-2xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#1E2532] uppercase tracking-wider mb-1">
+                      Institutional Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={pilotForm.email}
+                      onChange={(e) => setPilotForm({ ...pilotForm, email: e.target.value })}
+                      placeholder="kellis@hospital.org"
+                      className="w-full px-3 h-9 bg-white border border-white/80 rounded-xl text-xs font-semibold text-[#1E2532] outline-none shadow-2xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#1E2532] uppercase tracking-wider mb-1">
+                      Health System / Hospital
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={pilotForm.hospital}
+                      onChange={(e) => setPilotForm({ ...pilotForm, hospital: e.target.value })}
+                      placeholder="Memorial Health System"
+                      className="w-full px-3 h-9 bg-white border border-white/80 rounded-xl text-xs font-semibold text-[#1E2532] outline-none shadow-2xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#1E2532] uppercase tracking-wider mb-1">
+                      Your Role
+                    </label>
+                    <select
+                      value={pilotForm.role}
+                      onChange={(e) => setPilotForm({ ...pilotForm, role: e.target.value })}
+                      className="w-full px-2.5 h-9 bg-white border border-white/80 rounded-xl text-xs font-semibold text-[#1E2532] outline-none shadow-2xs"
+                    >
+                      <option>Chief Medical Officer</option>
+                      <option>Director of Oncology</option>
+                      <option>Lead Nurse Navigator</option>
+                      <option>Hospital CIO / IT Lead</option>
+                      <option>Department Administrator</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#1E2532] uppercase tracking-wider mb-1">
+                    Screening Focus &amp; Volumes (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={pilotForm.notes}
+                    onChange={(e) => setPilotForm({ ...pilotForm, notes: e.target.value })}
+                    placeholder="e.g. 15,000 annual mammography / lung CT screenings across 3 diagnostic centers."
+                    className="w-full p-2.5 bg-white border border-white/80 rounded-xl text-xs font-normal text-[#1E2532] outline-none resize-none shadow-2xs"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-white/80">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setIsPilotModalOpen(false)}
+                    className="text-xs h-9 px-4 rounded-xl text-[#798393]"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={pilotStatus === "submitting"}
+                    className="bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold h-9 px-5 rounded-xl shadow-xs"
+                  >
+                    {pilotStatus === "submitting" ? "Submitting..." : "Submit Pilot Request"}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Frosted Micro Footer */}
+      <footer className="h-16 px-6 sm:px-10 border-t border-white/80 bg-white/60 backdrop-blur-md text-xs text-[#798393] flex flex-col sm:flex-row items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-[#332219]">&copy; {new Date().getFullYear()} CareLoop Health Systems</span>
+          <span className="font-semibold text-[#1E2532]">&copy; 2026 CareLoop Health Systems</span>
           <span>&bull; Closing the Screening-to-Care Loop</span>
         </div>
-        <div className="flex items-center gap-4 font-semibold text-[#332219]">
-          <span>Strict Role-Based Access Control</span>
-          <span>HIPAA Compliant</span>
+        <div className="flex items-center gap-4 font-semibold text-[#798393]">
+          <Link to="/privacy" className="hover:text-[#1E2532]">Privacy Policy</Link>
+          <Link to="/terms" className="hover:text-[#1E2532]">Terms</Link>
+          <Link to="/help" className="hover:text-[#1E2532]">Help Center</Link>
+          <Link to="/contact" className="hover:text-[#1E2532]">Contact</Link>
         </div>
       </footer>
     </div>

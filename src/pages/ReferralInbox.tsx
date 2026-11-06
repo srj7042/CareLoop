@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusChip, SLATimer } from "@/components/ui/chips";
 import { KPICard } from "@/components/ui/kpicard";
+import { GlassCard, StatusPill, IconButton } from "@/components/design-system";
 import { useStore } from "@/lib/store";
 import type { ReferralPacket as ReferralPacketType } from "@/types";
 
@@ -89,13 +90,11 @@ export const ReferralInbox = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-teal-deep">Specialist Referral Inbox</h1>
-            <Badge variant="mint" className="text-xs font-semibold">
-              {pendingCount} Pending Review
-            </Badge>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl font-bold tracking-tight text-[#1E2532]">Specialist Referral Inbox</h1>
+            <StatusPill variant="lavender" label={`${pendingCount} Pending Review`} size="sm" pulse />
           </div>
-          <p className="text-xs text-muted mt-1">
+          <p className="text-xs text-[#798393] mt-1">
             Receiving clinician referral triage. Auto-assembled clinical hand-off summaries ensure closed-loop conversion.
           </p>
         </div>
@@ -130,23 +129,23 @@ export const ReferralInbox = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 bg-surface-card border border-surface-border rounded-xl space-y-3 shadow-xs">
+      <GlassCard className="p-4 rounded-[24px]">
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#798393]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by patient name, case ID, or specialty..."
-              className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-surface-border bg-surface-white focus:outline-none focus:ring-1 focus:ring-teal-brand"
+              className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-white/80 bg-white/70 text-[#1E2532] placeholder-[#798393] focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/30 shadow-2xs"
             />
           </div>
 
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as any)}
-            className="text-xs px-3 py-2 rounded-lg border border-surface-border bg-surface-white text-body focus:outline-none focus:ring-1 focus:ring-teal-brand"
+            className="text-xs px-3.5 py-2 rounded-xl border border-white/80 bg-white/70 text-[#1E2532] focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/30 shadow-2xs"
           >
             <option value="all">All Referral Statuses</option>
             <option value="pending">Pending</option>
@@ -163,30 +162,30 @@ export const ReferralInbox = () => {
                 setSearch("");
                 setFilterStatus("all");
               }}
-              className="text-xs text-muted hover:text-teal-deep"
+              className="text-xs text-[#798393] hover:text-[#1E2532] rounded-xl"
             >
               Reset
             </Button>
           )}
         </div>
-      </div>
+      </GlassCard>
 
       {/* Table */}
-      <div className="border border-surface-border rounded-xl bg-surface-card overflow-hidden shadow-xs">
+      <GlassCard className="p-0 rounded-[26px] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-surface-white/80 border-b border-surface-border text-muted font-bold uppercase tracking-wider text-[10px]">
-                <th className="py-3 px-4">Case & Facility</th>
-                <th className="py-3 px-4">Patient Profile</th>
-                <th className="py-3 px-4">Screening & Specialty</th>
-                <th className="py-3 px-4">Urgency</th>
-                <th className="py-3 px-4">Referral Reason</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Triage Actions</th>
+              <tr className="bg-white/40 border-b border-white/80 text-[#798393] font-bold uppercase tracking-wider text-[10px]">
+                <th className="py-3.5 px-5">Case &amp; Facility</th>
+                <th className="py-3.5 px-5">Patient Profile</th>
+                <th className="py-3.5 px-5">Screening &amp; Specialty</th>
+                <th className="py-3.5 px-5">Urgency</th>
+                <th className="py-3.5 px-5">Referral Reason</th>
+                <th className="py-3.5 px-5">Status</th>
+                <th className="py-3.5 px-5 text-right">Triage Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-border">
+            <tbody className="divide-y divide-white/60">
               {filtered.map((c) => {
                 const r = c.referral!;
                 const isPending = r.status === "pending";
@@ -194,47 +193,47 @@ export const ReferralInbox = () => {
                 return (
                   <tr
                     key={c.id}
-                    className="hover:bg-mint-wash/30 transition-colors group cursor-pointer"
+                    className="hover:bg-white/60 transition-colors group cursor-pointer"
                     onClick={() => navigate(`/case/${c.id}`)}
                   >
-                    <td className="py-3.5 px-4 font-medium">
-                      <span className="font-bold text-teal-deep group-hover:text-teal-brand">
+                    <td className="py-4 px-5 font-medium">
+                      <span className="font-bold text-[#1E2532] group-hover:text-[#8B5CF6] transition-colors">
                         {c.id}
                       </span>
-                      <p className="text-[11px] text-muted truncate max-w-[130px]">{c.facility}</p>
+                      <p className="text-[11px] text-[#798393] truncate max-w-[130px] mt-0.5">{c.facility}</p>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <p className="font-bold text-teal-deep">{c.patientName}</p>
-                      <p className="text-[11px] text-muted">
+                    <td className="py-4 px-5">
+                      <p className="font-bold text-[#1E2532]">{c.patientName}</p>
+                      <p className="text-[11px] text-[#798393] mt-0.5">
                         {c.patientAge}y • {c.patientLanguage.toUpperCase()}
                       </p>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <p className="font-semibold text-body">{c.screeningType}</p>
-                      <Badge variant="mint" className="text-[10px] mt-0.5 font-medium">
+                    <td className="py-4 px-5">
+                      <p className="font-semibold text-[#1E2532]">{c.screeningType}</p>
+                      <span className="inline-block text-[10px] mt-1 font-semibold text-[#8B5CF6] bg-[#8B5CF6]/10 px-2 py-0.5 rounded-full border border-[#8B5CF6]/20">
                         {r.specialtyRequired}
-                      </Badge>
+                      </span>
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-4 px-5">
                       <StatusChip urgency={r.urgency || c.urgency} />
                     </td>
 
-                    <td className="py-3.5 px-4 max-w-[200px]">
-                      <p className="text-body text-[11px] line-clamp-2 leading-relaxed">
+                    <td className="py-4 px-5 max-w-[200px]">
+                      <p className="text-[#1E2532] text-[11px] line-clamp-2 leading-relaxed">
                         {r.reasonForReferral}
                       </p>
                       {r.rejectReason && (
-                        <p className="text-[10px] text-coral font-medium mt-0.5 truncate">
+                        <p className="text-[10px] text-[#EF4444] font-medium mt-0.5 truncate">
                           Reason: {r.rejectReason}
                         </p>
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <Badge
+                    <td className="py-4 px-5">
+                      <StatusPill
                         variant={
                           r.status === "accepted"
                             ? "mint"
@@ -242,14 +241,13 @@ export const ReferralInbox = () => {
                             ? "coral"
                             : "amber"
                         }
-                        className="text-[11px] capitalize"
-                      >
-                        {r.status === "more-info" ? "More Info" : r.status}
-                      </Badge>
+                        label={r.status === "more-info" ? "More Info" : r.status}
+                        size="sm"
+                      />
                     </td>
 
                     <td
-                      className="py-3.5 px-4 text-right"
+                      className="py-4 px-5 text-right"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex items-center justify-end gap-1.5">
@@ -265,7 +263,7 @@ export const ReferralInbox = () => {
                                   acceptedAt: new Date().toISOString(),
                                 })
                               }
-                              className="bg-teal-brand text-white hover:bg-teal-hover text-[11px] h-7 px-2.5 font-bold shadow-2xs"
+                              className="bg-[#10B981] hover:bg-[#059669] text-white text-[11px] h-7 px-3 font-bold rounded-lg shadow-xs"
                             >
                               <CheckCircle2 size={12} className="mr-1" /> Accept
                             </Button>
@@ -280,7 +278,7 @@ export const ReferralInbox = () => {
                                   patientName: c.patientName,
                                 })
                               }
-                              className="text-[11px] h-7 px-2 border-amber/50 text-[#8C5D00] hover:bg-amber/10"
+                              className="text-[11px] h-7 px-2.5 bg-white/80 border-white/90 text-amber-800 hover:bg-white rounded-lg"
                             >
                               More Info
                             </Button>
@@ -295,7 +293,7 @@ export const ReferralInbox = () => {
                                   patientName: c.patientName,
                                 })
                               }
-                              className="text-[11px] h-7 px-2 border-coral/50 text-coral hover:bg-coral/10"
+                              className="text-[11px] h-7 px-2.5 bg-white/80 border-white/90 text-rose-700 hover:bg-white rounded-lg"
                             >
                               Reject
                             </Button>
@@ -305,7 +303,7 @@ export const ReferralInbox = () => {
                             size="sm"
                             variant="ghost"
                             onClick={() => navigate(`/case/${c.id}`)}
-                            className="text-xs text-teal-brand font-semibold"
+                            className="text-xs text-[#8B5CF6] hover:bg-[#8B5CF6]/10 font-semibold rounded-lg"
                           >
                             View Case <ArrowRight size={12} className="ml-1" />
                           </Button>
@@ -318,7 +316,7 @@ export const ReferralInbox = () => {
 
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-muted">
+                  <td colSpan={7} className="py-12 text-center text-[#798393]">
                     No specialist referrals found matching the selected filter.
                   </td>
                 </tr>
@@ -326,24 +324,24 @@ export const ReferralInbox = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </GlassCard>
 
       {/* Reject / More Info Modal Dialog */}
       {activeActionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-teal-deep/50 backdrop-blur-2xs">
-          <div className="bg-surface-card border border-surface-border rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
-            <h3 className="text-base font-bold text-teal-deep">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-sm">
+          <div className="bg-white/95 backdrop-blur-xl border border-white/80 rounded-[28px] shadow-[0_24px_48px_rgba(100,115,140,0.15)] w-full max-w-md p-6 space-y-4">
+            <h3 className="text-base font-bold text-[#1E2532]">
               {activeActionModal.type === "reject"
                 ? "Document Referral Rejection Reason"
                 : "Request Additional Clinical Information"}
             </h3>
 
-            <p className="text-xs text-muted">
-              Patient: <strong>{activeActionModal.patientName}</strong> • {activeActionModal.caseId}
+            <p className="text-xs text-[#798393]">
+              Patient: <strong className="text-[#1E2532]">{activeActionModal.patientName}</strong> • {activeActionModal.caseId}
             </p>
 
             <div className="space-y-1.5 text-xs">
-              <label className="font-bold text-teal-deep">
+              <label className="font-bold text-[#1E2532]">
                 {activeActionModal.type === "reject"
                   ? "Mandatory Rejection Justification (e.g., Pre-authorization required, Clinic capacity)"
                   : "Specify What Documentation / Lab is Needed"}
@@ -357,7 +355,7 @@ export const ReferralInbox = () => {
                     : "e.g. Please supply latest renal panel and ultrasound scan..."
                 }
                 rows={3}
-                className="w-full text-xs p-2.5 rounded-lg border border-surface-border bg-white focus:outline-none focus:ring-1 focus:ring-teal-brand"
+                className="w-full text-xs p-3 rounded-xl border border-white/80 bg-white text-[#1E2532] placeholder-[#798393] focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/30 shadow-2xs"
               />
             </div>
 
@@ -369,7 +367,7 @@ export const ReferralInbox = () => {
                   setActiveActionModal(null);
                   setModalInputReason("");
                 }}
-                className="text-xs"
+                className="text-xs rounded-xl text-[#798393]"
               >
                 Cancel
               </Button>
@@ -377,10 +375,10 @@ export const ReferralInbox = () => {
                 size="sm"
                 onClick={handleConfirmModalAction}
                 disabled={!modalInputReason.trim()}
-                className={`text-xs font-bold text-white ${
+                className={`text-xs font-bold text-white rounded-xl shadow-xs ${
                   activeActionModal.type === "reject"
-                    ? "bg-coral hover:bg-coral/90"
-                    : "bg-teal-brand hover:bg-teal-hover"
+                    ? "bg-[#EF4444] hover:bg-rose-600"
+                    : "bg-[#10B981] hover:bg-[#059669]"
                 }`}
               >
                 Confirm {activeActionModal.type === "reject" ? "Rejection" : "Request"}

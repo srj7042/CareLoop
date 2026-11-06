@@ -1,30 +1,69 @@
 import * as React from "react";
-import { Badge } from "@/components/ui/badge";
-import { urgencyColor, statusStepColor, formatSLADiff } from "@/lib/utils";
+import { formatSLADiff } from "@/lib/utils";
 import type { Urgency, CaseStep, SideState, Role } from "@/types";
 import { Clock, AlertTriangle, Users, CheckCircle2, ShieldAlert } from "lucide-react";
 
 export const StatusChip = ({ urgency }: { urgency: Urgency }) => {
-  const color = urgencyColor(urgency);
-  const label = urgency.charAt(0).toUpperCase() + urgency.slice(1);
+  const configs: Record<Urgency, { label: string; dot: string; bg: string; text: string; border: string }> = {
+    urgent: {
+      label: "Urgent",
+      dot: "bg-[#EF4444]",
+      bg: "bg-rose-50/80",
+      text: "text-rose-700",
+      border: "border-rose-200/80",
+    },
+    high: {
+      label: "High",
+      dot: "bg-[#F59E0B]",
+      bg: "bg-amber-50/80",
+      text: "text-amber-800",
+      border: "border-amber-200/80",
+    },
+    routine: {
+      label: "Routine",
+      dot: "bg-[#10B981]",
+      bg: "bg-emerald-50/80",
+      text: "text-emerald-800",
+      border: "border-emerald-200/80",
+    },
+  };
+
+  const item = configs[urgency] || configs.routine;
+
   return (
-    <Badge variant={color as any} className="font-semibold text-xs capitalize">
-      {urgency === "urgent" && <AlertTriangle size={12} className="inline mr-1" />}
-      {label}
-    </Badge>
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight border backdrop-blur-xs ${item.bg} ${item.text} ${item.border} shadow-2xs`}
+    >
+      <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
+        {urgency === "urgent" && (
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${item.dot}`} />
+        )}
+        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${item.dot}`} />
+      </span>
+      <span>{item.label}</span>
+    </span>
   );
 };
 
 export const StepStatusChip = ({ status }: { status: CaseStep["status"] }) => {
-  const color = statusStepColor(status);
-  const labels: Record<string, string> = {
-    "not-started": "Not Started",
-    "in-progress": "In Progress",
-    completed: "Done ✓",
-    overdue: "Overdue",
-    skipped: "Skipped",
+  const configs: Record<string, { label: string; dot: string; bg: string }> = {
+    "not-started": { label: "Not Started", dot: "bg-[#798393]", bg: "bg-white/70 text-[#798393] border-white/80" },
+    "in-progress": { label: "In Progress", dot: "bg-[#8B5CF6]", bg: "bg-[#8B5CF6]/10 text-[#5B21B6] border-[#8B5CF6]/20" },
+    completed: { label: "Done ✓", dot: "bg-[#10B981]", bg: "bg-[#10B981]/10 text-[#065F46] border-[#10B981]/20" },
+    overdue: { label: "Overdue", dot: "bg-[#EF4444]", bg: "bg-rose-50/80 text-rose-700 border-rose-200" },
+    skipped: { label: "Skipped", dot: "bg-[#798393]", bg: "bg-white/60 text-[#798393] border-white/60" },
   };
-  return <Badge variant={color as any}>{labels[status] || status}</Badge>;
+
+  const item = configs[status] || configs["not-started"];
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight border backdrop-blur-xs shadow-2xs ${item.bg}`}
+    >
+      <span className={`inline-flex rounded-full h-1.5 w-1.5 ${item.dot}`} />
+      <span>{item.label}</span>
+    </span>
+  );
 };
 
 export const SideStateBadge = ({ sideState }: { sideState: SideState }) => {
@@ -32,24 +71,26 @@ export const SideStateBadge = ({ sideState }: { sideState: SideState }) => {
 
   const config: Record<
     string,
-    { label: string; variant: "coral" | "amber" | "mint" | "surface"; icon: React.ElementType }
+    { label: string; dot: string; bg: string; text: string; border: string; icon: React.ElementType }
   > = {
-    overdue: { label: "Overdue SLA", variant: "coral", icon: Clock },
-    rejected: { label: "Referral Rejected", variant: "coral", icon: AlertTriangle },
-    unassigned: { label: "Awaiting Assignment", variant: "amber", icon: Users },
-    escalated: { label: "Escalated", variant: "coral", icon: ShieldAlert },
-    "lost-to-follow-up": { label: "Lost to Follow-up", variant: "amber", icon: AlertTriangle },
-    "patient-declined": { label: "Patient Declined", variant: "amber", icon: AlertTriangle },
+    overdue: { label: "Overdue SLA", dot: "bg-[#EF4444]", bg: "bg-rose-50/90", text: "text-rose-700", border: "border-rose-200", icon: Clock },
+    rejected: { label: "Referral Rejected", dot: "bg-[#EF4444]", bg: "bg-rose-50/90", text: "text-rose-700", border: "border-rose-200", icon: AlertTriangle },
+    unassigned: { label: "Awaiting Assignment", dot: "bg-[#F59E0B]", bg: "bg-amber-50/90", text: "text-amber-800", border: "border-amber-200", icon: Users },
+    escalated: { label: "Escalated", dot: "bg-[#8B5CF6]", bg: "bg-[#8B5CF6]/10", text: "text-[#5B21B6]", border: "border-[#8B5CF6]/25", icon: ShieldAlert },
+    "lost-to-follow-up": { label: "Lost to Follow-up", dot: "bg-[#F59E0B]", bg: "bg-amber-50/90", text: "text-amber-800", border: "border-amber-200", icon: AlertTriangle },
+    "patient-declined": { label: "Patient Declined", dot: "bg-[#F59E0B]", bg: "bg-amber-50/90", text: "text-amber-800", border: "border-amber-200", icon: AlertTriangle },
   };
 
-  const item = config[sideState] || { label: sideState, variant: "amber", icon: AlertTriangle };
+  const item = config[sideState] || { label: sideState, dot: "bg-[#F59E0B]", bg: "bg-amber-50/90", text: "text-amber-800", border: "border-amber-200", icon: AlertTriangle };
   const Icon = item.icon;
 
   return (
-    <Badge variant={item.variant} className="flex items-center gap-1.5 font-medium text-xs">
-      <Icon size={12} strokeWidth={2.5} />
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border backdrop-blur-xs shadow-2xs ${item.bg} ${item.text} ${item.border}`}
+    >
+      <Icon size={12} strokeWidth={2} />
       <span>{item.label}</span>
-    </Badge>
+    </span>
   );
 };
 
@@ -63,15 +104,15 @@ export const OwnerBadge = ({
   isQueue?: boolean;
 }) => {
   return (
-    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-surface-border bg-white text-xs text-body shadow-xs">
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/80 bg-white/85 text-xs text-[#1E2532] shadow-2xs backdrop-blur-xs">
       <span
-        className={`w-2 h-2 rounded-full ${
-          isQueue || role === "triage-queue" ? "bg-amber" : "bg-teal-brand"
+        className={`w-1.5 h-1.5 rounded-full ${
+          isQueue || role === "triage-queue" ? "bg-[#F59E0B]" : "bg-[#10B981]"
         }`}
       />
-      <span className="font-semibold text-teal-deep">{owner}</span>
+      <span className="font-semibold text-[#1E2532]">{owner}</span>
       {role && (
-        <span className="text-[11px] text-muted border-l border-surface-border pl-1.5">
+        <span className="text-[10px] text-[#798393] border-l border-slate-200/80 pl-1.5 font-medium">
           {role === "triage-queue" ? "Queue" : role}
         </span>
       )}
@@ -91,13 +132,14 @@ export const SLATimer = ({
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-tight border ${
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight border backdrop-blur-xs shadow-2xs ${
         overdue
-          ? "bg-coral/10 text-coral border-coral/30"
-          : "bg-amber/15 text-[#9C6B00] border-amber/40"
+          ? "bg-rose-50/90 text-rose-700 border-rose-200/80"
+          : "bg-amber-50/80 text-amber-800 border-amber-200/80"
       } ${className || ""}`}
     >
-      <Clock size={11} strokeWidth={2.5} />
+      <span className={`w-1.5 h-1.5 rounded-full ${overdue ? "bg-[#EF4444]" : "bg-[#F59E0B]"}`} />
+      <Clock size={11} strokeWidth={2} />
       <span>{label}</span>
     </span>
   );

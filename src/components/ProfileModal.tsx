@@ -170,9 +170,9 @@ export const ProfileModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-teal-deep/50 backdrop-blur-xs animate-in fade-in duration-200 font-sans">
-      <div className="bg-[#FFFDF9] border border-[#E8DFD3] rounded-3xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header - Warm Saddle Light Brown */}
-        <div className="bg-gradient-to-r from-[#7B4D24] via-[#633D1C] to-[#7B4D24] text-white p-6 relative flex-shrink-0">
+      <div className="bg-white border border-[#E8ECE9] rounded-3xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header - Landing Page Deep Forest & Sage */}
+        <div className="bg-gradient-to-r from-[#1E2522] via-[#2A342F] to-[#1E2522] text-white p-6 relative flex-shrink-0">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white/70 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors"
@@ -183,7 +183,7 @@ export const ProfileModal = ({
 
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-[#FAF6F0] border-2 border-white/30 flex items-center justify-center text-xl font-black text-[#7B4D24] shadow-md">
+              <div className="w-14 h-14 rounded-2xl bg-[#E7F2ED] border-2 border-white/30 flex items-center justify-center text-xl font-black text-[#1E2522] shadow-md">
                 {currentUser.name
                   .split(" ")
                   .map((n) => n[0])
@@ -194,15 +194,15 @@ export const ProfileModal = ({
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-black text-white">{currentUser.name}</h3>
                   {currentUser.title && (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-[#FAF6F0] font-semibold">
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-[#F7F8F5] font-semibold">
                       {currentUser.title}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#F5EBE1] font-semibold">
+                <p className="text-xs text-[#C2CEC8] font-semibold">
                   {roleConfig?.roleTitle || currentUser.role}
                 </p>
-                <p className="text-[11px] text-[#F3E2D2]/80 flex items-center gap-1 mt-1">
+                <p className="text-[11px] text-[#A0B0A8]/80 flex items-center gap-1 mt-1">
                   <Building size={12} /> {currentUser.organizationName}
                 </p>
               </div>
@@ -212,7 +212,7 @@ export const ProfileModal = ({
               <Button
                 size="sm"
                 onClick={() => setIsEditing(true)}
-                className="bg-[#FAF6F0] hover:bg-white text-[#633917] font-bold text-xs h-9 px-3 rounded-xl shadow-xs flex items-center gap-1.5 transition-all"
+                className="bg-[#609983] hover:bg-[#4D7D6B] text-white font-bold text-xs h-9 px-3 rounded-xl shadow-xs flex items-center gap-1.5 transition-all"
               >
                 <Edit3 size={13} />
                 Edit Profile
@@ -243,20 +243,20 @@ export const ProfileModal = ({
             <>
               {/* Workload Snapshot */}
               <div>
-                <p className="text-xs font-extrabold text-[#332219] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                  <Briefcase size={14} className="text-[#965F2B]" />
+                <p className="text-xs font-extrabold text-[#1E2522] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                  <Briefcase size={14} className="text-[#609983]" />
                   Assignment &amp; Case Ownership
                 </p>
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="p-3 rounded-2xl bg-white border border-[#E8DFD3] text-center shadow-xs">
-                    <p className="text-xl font-black text-[#332219]">{openCount}</p>
-                    <p className="text-[11px] text-[#7B685B] font-medium">Assigned Open</p>
+                  <div className="p-3 rounded-2xl bg-white border border-[#E8ECE9] text-center shadow-xs card-hover-subtle">
+                    <p className="text-xl font-black text-[#1E2522]">{openCount}</p>
+                    <p className="text-[11px] text-[#5B6660] font-medium">Assigned Open</p>
                   </div>
-                  <div className="p-3 rounded-2xl bg-[#F4ECE1] border border-[#DFCBB5] text-center shadow-xs">
-                    <p className="text-xl font-black text-[#965F2B]">{closedCount}</p>
-                    <p className="text-[11px] text-[#332219] font-medium">Loops Closed</p>
+                  <div className="p-3 rounded-2xl bg-[#E7F2ED] border border-[#C6DDD3] text-center shadow-xs card-hover-subtle">
+                    <p className="text-xl font-black text-[#609983]">{closedCount}</p>
+                    <p className="text-[11px] text-[#1E2522] font-medium">Loops Closed</p>
                   </div>
-                  <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-center shadow-xs">
+                  <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-center shadow-xs card-hover-subtle">
                     <p className="text-xl font-black text-red-600">{overdueCount}</p>
                     <p className="text-[11px] text-red-700 font-medium">Overdue</p>
                   </div>
@@ -266,70 +266,70 @@ export const ProfileModal = ({
               {/* Personal Information & Credentials */}
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-extrabold text-[#332219] uppercase tracking-wider flex items-center gap-1.5">
-                    <UserIcon size={14} className="text-[#965F2B]" />
+                  <p className="text-xs font-extrabold text-[#1E2522] uppercase tracking-wider flex items-center gap-1.5">
+                    <UserIcon size={14} className="text-[#609983]" />
                     Personal &amp; Contact Information
                   </p>
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="text-[11px] font-bold text-[#965F2B] hover:text-[#7E4D1E] hover:underline flex items-center gap-1"
+                    className="text-[11px] font-bold text-[#609983] hover:text-[#4D7D6B] hover:underline flex items-center gap-1"
                   >
                     <Edit3 size={11} /> Update
                   </button>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white border border-[#E8DFD3] space-y-2.5 shadow-xs">
-                  <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
-                    <span className="text-[#7B685B] font-medium">Full Name:</span>
-                    <span className="font-bold text-[#332219]">{currentUser.name}</span>
+                <div className="p-4 rounded-2xl bg-white border border-[#E8ECE9] space-y-2.5 shadow-xs card-hover-subtle">
+                  <div className="flex justify-between items-center py-1 border-b border-[#E8ECE9]/60">
+                    <span className="text-[#5B6660] font-medium">Full Name:</span>
+                    <span className="font-bold text-[#1E2522]">{currentUser.name}</span>
                   </div>
 
                   {currentUser.title && (
-                    <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
-                      <span className="text-[#7B685B] font-medium">Professional Title:</span>
-                      <span className="font-semibold text-[#332219]">{currentUser.title}</span>
+                    <div className="flex justify-between items-center py-1 border-b border-[#E8ECE9]/60">
+                      <span className="text-[#5B6660] font-medium">Professional Title:</span>
+                      <span className="font-semibold text-[#1E2522]">{currentUser.title}</span>
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
-                    <span className="text-[#7B685B] font-medium">Clinical Email:</span>
-                    <span className="font-mono font-semibold text-[#965F2B] text-[11px]">
+                  <div className="flex justify-between items-center py-1 border-b border-[#E8ECE9]/60">
+                    <span className="text-[#5B6660] font-medium">Clinical Email:</span>
+                    <span className="font-mono font-semibold text-[#609983] text-[11px]">
                       {currentUser.email}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
-                    <span className="text-[#7B685B] font-medium">Direct Phone:</span>
-                    <span className="font-semibold text-[#332219]">
+                  <div className="flex justify-between items-center py-1 border-b border-[#E8ECE9]/60">
+                    <span className="text-[#5B6660] font-medium">Direct Phone:</span>
+                    <span className="font-semibold text-[#1E2522]">
                       {currentUser.phone || "Not set"}
                     </span>
                   </div>
 
                   {currentUser.secondaryPhone && (
-                    <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
-                      <span className="text-[#7B685B] font-medium">Emergency / Alt Phone:</span>
-                      <span className="font-semibold text-[#332219]">
+                    <div className="flex justify-between items-center py-1 border-b border-[#E8ECE9]/60">
+                      <span className="text-[#5B6660] font-medium">Emergency / Alt Phone:</span>
+                      <span className="font-semibold text-[#1E2522]">
                         {currentUser.secondaryPhone}
                       </span>
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
-                    <span className="text-[#7B685B] font-medium">Department:</span>
-                    <span className="font-semibold text-[#332219]">
+                  <div className="flex justify-between items-center py-1 border-b border-[#E8ECE9]/60">
+                    <span className="text-[#5B6660] font-medium">Department:</span>
+                    <span className="font-semibold text-[#1E2522]">
                       {currentUser.department || "Clinical Care"}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/60">
-                    <span className="text-[#7B685B] font-medium">Primary Facility:</span>
-                    <span className="font-semibold text-[#332219]">{currentUser.facility}</span>
+                  <div className="flex justify-between items-center py-1 border-b border-[#E8ECE9]/60">
+                    <span className="text-[#5B6660] font-medium">Primary Facility:</span>
+                    <span className="font-semibold text-[#1E2522]">{currentUser.facility}</span>
                   </div>
 
                   {currentUser.bio && (
                     <div className="pt-1.5">
-                      <span className="text-[#7B685B] font-medium block mb-1">Professional Bio / Notes:</span>
-                      <p className="p-2.5 rounded-xl bg-[#FAF6F0] text-[#36271E] text-xs leading-relaxed border border-[#E8DFD3]">
+                      <span className="text-[#5B6660] font-medium block mb-1">Professional Bio / Notes:</span>
+                      <p className="p-2.5 rounded-xl bg-[#F7F8F5] text-[#1E2522] text-xs leading-relaxed border border-[#E8ECE9]">
                         {currentUser.bio}
                       </p>
                     </div>
@@ -340,18 +340,18 @@ export const ProfileModal = ({
               {/* Custom Personal Details Added by User */}
               {currentUser.customFields && currentUser.customFields.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-extrabold text-[#332219] uppercase tracking-wider flex items-center gap-1.5">
-                    <Tag size={14} className="text-[#965F2B]" />
+                  <p className="text-xs font-extrabold text-[#1E2522] uppercase tracking-wider flex items-center gap-1.5">
+                    <Tag size={14} className="text-[#609983]" />
                     Additional Personal Fields ({currentUser.customFields.length})
                   </p>
-                  <div className="p-3.5 rounded-2xl bg-white border border-[#E8DFD3] space-y-2 shadow-xs">
+                  <div className="p-3.5 rounded-2xl bg-white border border-[#E8ECE9] space-y-2 shadow-xs">
                     {currentUser.customFields.map((field) => (
                       <div
                         key={field.id}
-                        className="flex justify-between items-center py-1 border-b border-[#E8DFD3]/50 last:border-0"
+                        className="flex justify-between items-center py-1 border-b border-[#E8ECE9]/50 last:border-0"
                       >
-                        <span className="text-[#7B685B] font-medium">{field.label}:</span>
-                        <span className="font-bold text-[#332219]">{field.value}</span>
+                        <span className="text-[#5B6660] font-medium">{field.label}:</span>
+                        <span className="font-bold text-[#1E2522]">{field.value}</span>
                       </div>
                     ))}
                   </div>
@@ -361,12 +361,12 @@ export const ProfileModal = ({
           ) : (
             /* EDIT MODE - Update, Add, Remove */
             <form onSubmit={handleSaveProfile} className="space-y-5">
-              <div className="flex items-center justify-between pb-2 border-b border-[#E8DFD3]">
-                <span className="font-extrabold text-sm text-[#332219] flex items-center gap-1.5">
-                  <Edit3 size={15} className="text-[#965F2B]" />
+              <div className="flex items-center justify-between pb-2 border-b border-[#E8ECE9]">
+                <span className="font-extrabold text-sm text-[#1E2522] flex items-center gap-1.5">
+                  <Edit3 size={15} className="text-[#609983]" />
                   Edit Personal Information
                 </span>
-                <span className="text-[11px] text-[#7B685B]">
+                <span className="text-[11px] text-[#5B6660]">
                   Update values, add new attributes, or remove fields
                 </span>
               </div>
@@ -374,7 +374,7 @@ export const ProfileModal = ({
               {/* Basic Fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#1E2522] uppercase tracking-wider mb-1">
                     Full Name *
                   </label>
                   <input
@@ -382,72 +382,72 @@ export const ProfileModal = ({
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8ECE9] focus:border-[#609983] focus:ring-2 focus:ring-[#609983]/15 text-[#1E2522] font-semibold text-xs outline-none"
                     placeholder="e.g. Sarah Thompson"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#1E2522] uppercase tracking-wider mb-1">
                     Title / Credentials
                   </label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8ECE9] focus:border-[#609983] focus:ring-2 focus:ring-[#609983]/15 text-[#1E2522] font-semibold text-xs outline-none"
                     placeholder="e.g. BSN, RN or MD, FACS"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#1E2522] uppercase tracking-wider mb-1">
                     Direct Clinical Phone
                   </label>
                   <input
                     type="text"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8ECE9] focus:border-[#609983] focus:ring-2 focus:ring-[#609983]/15 text-[#1E2522] font-semibold text-xs outline-none"
                     placeholder="+1 (555) 100-2004"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#1E2522] uppercase tracking-wider mb-1">
                     Alternate / Emergency Phone
                   </label>
                   <input
                     type="text"
                     value={formData.secondaryPhone}
                     onChange={(e) => setFormData({ ...formData, secondaryPhone: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8ECE9] focus:border-[#609983] focus:ring-2 focus:ring-[#609983]/15 text-[#1E2522] font-semibold text-xs outline-none"
                     placeholder="+1 (555) 999-8888"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#1E2522] uppercase tracking-wider mb-1">
                     Department
                   </label>
                   <input
                     type="text"
                     value={formData.department}
                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8ECE9] focus:border-[#609983] focus:ring-2 focus:ring-[#609983]/15 text-[#1E2522] font-semibold text-xs outline-none"
                     placeholder="e.g. Care Coordination"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-[#1E2522] uppercase tracking-wider mb-1">
                     Facility Location
                   </label>
                   <input
                     type="text"
                     value={formData.facility}
                     onChange={(e) => setFormData({ ...formData, facility: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-semibold text-xs outline-none"
+                    className="w-full h-9 px-3 rounded-xl bg-white border-2 border-[#E8ECE9] focus:border-[#609983] focus:ring-2 focus:ring-[#609983]/15 text-[#1E2522] font-semibold text-xs outline-none"
                     placeholder="e.g. Apex Ambulatory Pavilion"
                   />
                 </div>
@@ -455,25 +455,25 @@ export const ProfileModal = ({
 
               {/* Bio / Summary */}
               <div>
-                <label className="block text-[11px] font-bold text-[#332219] uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-[#1E2522] uppercase tracking-wider mb-1">
                   Professional Bio / Clinical Notes
                 </label>
                 <textarea
                   rows={2}
                   value={formData.bio}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  className="w-full p-3 rounded-xl bg-white border-2 border-[#E8DFD3] focus:border-[#965F2B] focus:ring-2 focus:ring-[#965F2B]/15 text-[#332219] font-medium text-xs outline-none resize-none"
+                  className="w-full p-3 rounded-xl bg-white border-2 border-[#E8ECE9] focus:border-[#609983] focus:ring-2 focus:ring-[#609983]/15 text-[#1E2522] font-medium text-xs outline-none resize-none"
                   placeholder="Specializations, clinical responsibilities, or languages spoken..."
                 />
               </div>
 
               {/* Custom Fields - Add & Remove */}
-              <div className="pt-2 border-t border-[#E8DFD3] space-y-3">
+              <div className="pt-2 border-t border-[#E8ECE9] space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="block text-[11px] font-extrabold text-[#332219] uppercase tracking-wider">
+                  <label className="block text-[11px] font-extrabold text-[#1E2522] uppercase tracking-wider">
                     Custom Attributes &amp; Contacts
                   </label>
-                  <span className="text-[10px] text-[#7B685B]">
+                  <span className="text-[10px] text-[#5B6660]">
                     {customFields.length} field{customFields.length === 1 ? "" : "s"} added
                   </span>
                 </div>
@@ -484,10 +484,10 @@ export const ProfileModal = ({
                     {customFields.map((field) => (
                       <div
                         key={field.id}
-                        className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-[#E8DFD3]"
+                        className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-[#E8ECE9]"
                       >
                         <div className="w-1/3">
-                          <span className="text-[11px] font-bold text-[#332219] truncate block">
+                          <span className="text-[11px] font-bold text-[#1E2522] truncate block">
                             {field.label}
                           </span>
                         </div>
@@ -496,7 +496,7 @@ export const ProfileModal = ({
                             type="text"
                             value={field.value}
                             onChange={(e) => handleUpdateCustomField(field.id, e.target.value)}
-                            className="w-full h-8 px-2.5 rounded-lg bg-[#FAF6F0] border border-[#E8DFD3] text-[#332219] text-xs font-semibold outline-none focus:border-[#965F2B]"
+                            className="w-full h-8 px-2.5 rounded-lg bg-[#F7F8F5] border border-[#E8ECE9] text-[#1E2522] text-xs font-semibold outline-none focus:border-[#609983]"
                           />
                         </div>
                         <button
@@ -514,8 +514,8 @@ export const ProfileModal = ({
                 )}
 
                 {/* Add New Custom Field Form */}
-                <div className="p-3.5 rounded-2xl bg-[#FAF6F0] border border-[#DFCBB5] space-y-2.5">
-                  <span className="text-[11px] font-bold text-[#7B4D24] block">
+                <div className="p-3.5 rounded-2xl bg-[#F7F8F5] border border-[#C6DDD3] space-y-2.5">
+                  <span className="text-[11px] font-bold text-[#609983] block">
                     + Add New Personal Information Field
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 items-center">
@@ -525,7 +525,7 @@ export const ProfileModal = ({
                         value={newFieldLabel}
                         onChange={(e) => setNewFieldLabel(e.target.value)}
                         placeholder="Label (e.g. Pager #, Room)"
-                        className="w-full h-8 px-2.5 rounded-lg bg-white border border-[#E8DFD3] text-[#332219] text-xs outline-none focus:border-[#965F2B]"
+                        className="w-full h-8 px-2.5 rounded-lg bg-white border border-[#E8ECE9] text-[#1E2522] text-xs outline-none focus:border-[#609983]"
                       />
                     </div>
                     <div className="sm:col-span-2">
@@ -534,14 +534,14 @@ export const ProfileModal = ({
                         value={newFieldValue}
                         onChange={(e) => setNewFieldValue(e.target.value)}
                         placeholder="Value (e.g. Ext 4402)"
-                        className="w-full h-8 px-2.5 rounded-lg bg-white border border-[#E8DFD3] text-[#332219] text-xs outline-none focus:border-[#965F2B]"
+                        className="w-full h-8 px-2.5 rounded-lg bg-white border border-[#E8ECE9] text-[#1E2522] text-xs outline-none focus:border-[#609983]"
                       />
                     </div>
                     <div className="sm:col-span-1">
                       <button
                         type="button"
                         onClick={handleAddCustomField}
-                        className="w-full h-8 px-2.5 rounded-lg bg-[#965F2B] hover:bg-[#7E4D1E] text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors"
+                        className="w-full h-8 px-2.5 rounded-lg bg-[#609983] hover:bg-[#4D7D6B] text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors"
                       >
                         <Plus size={13} /> Add
                       </button>
@@ -551,13 +551,13 @@ export const ProfileModal = ({
               </div>
 
               {/* Edit Actions: Save / Cancel */}
-              <div className="pt-3 border-t border-[#E8DFD3] flex items-center justify-end gap-2.5">
+              <div className="pt-3 border-t border-[#E8ECE9] flex items-center justify-end gap-2.5">
                 <Button
                   type="button"
                   size="sm"
                   variant="outline"
                   onClick={handleCancelEdit}
-                  className="text-xs border-[#E8DFD3] text-[#7B685B] hover:bg-[#F4ECE1] font-semibold h-9 px-4 rounded-xl flex items-center gap-1.5"
+                  className="text-xs border-[#E8ECE9] text-[#5B6660] hover:bg-[#E7F2ED] font-semibold h-9 px-4 rounded-xl flex items-center gap-1.5"
                 >
                   <Undo2 size={13} /> Cancel
                 </Button>
@@ -565,7 +565,7 @@ export const ProfileModal = ({
                 <Button
                   type="submit"
                   size="sm"
-                  className="bg-[#965F2B] hover:bg-[#7E4D1E] text-white font-extrabold text-xs h-9 px-5 rounded-xl shadow-md shadow-[#965F2B]/20 flex items-center gap-1.5"
+                  className="bg-[#609983] hover:bg-[#4D7D6B] text-white font-extrabold text-xs h-9 px-5 rounded-xl shadow-md shadow-[#609983]/20 flex items-center gap-1.5"
                 >
                   <Save size={13} /> Save Profile Changes
                 </Button>
@@ -575,12 +575,12 @@ export const ProfileModal = ({
         </div>
 
         {/* Footer with Sign Out */}
-        <div className="p-4 bg-[#FAF6F0] border-t border-[#E8DFD3] flex items-center justify-between flex-shrink-0">
+        <div className="p-4 bg-[#F7F8F5] border-t border-[#E8ECE9] flex items-center justify-between flex-shrink-0">
           <Button
             size="sm"
             variant="outline"
             onClick={handleSignOut}
-            className="text-xs font-bold text-[#C44F3D] hover:bg-[#FBECE9] border-[#E8DFD3] flex items-center gap-1.5 rounded-xl h-8"
+            className="text-xs font-bold text-[#DC2626] hover:bg-[#FEE2E2] border-[#E8ECE9] flex items-center gap-1.5 rounded-xl h-8"
           >
             <LogOut size={13} /> Sign Out of CareLoop
           </Button>
@@ -589,7 +589,7 @@ export const ProfileModal = ({
             <Button
               size="sm"
               onClick={onClose}
-              className="bg-[#332219] hover:bg-[#4D3425] text-white text-xs font-semibold rounded-xl h-8 px-4"
+              className="bg-[#1E2522] hover:bg-[#2A342F] text-white text-xs font-semibold rounded-xl h-8 px-4"
             >
               Done
             </Button>
