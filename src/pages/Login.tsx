@@ -114,6 +114,28 @@ export const Login: React.FC = () => {
     }, 900);
   };
 
+  const handleGuestLogin = (guestRole: Role = "coordinator") => {
+    const account = REGISTERED_ACCOUNTS.find((a) => a.role === guestRole) || REGISTERED_ACCOUNTS[3];
+    login({
+      id: account.id,
+      name: account.name,
+      email: account.email,
+      role: account.role,
+      organizationId: account.organizationId,
+      organizationName: account.organizationName,
+      facility: account.facility,
+      department: account.department,
+      phone: account.phone,
+      status: account.status,
+      avatar: account.name.charAt(0),
+    });
+    const destination =
+      isDeepItemLink && isPathAllowedForRole(fromPath, account.role)
+        ? fromPath
+        : getDefaultPathForRole(account.role);
+    navigate(destination, { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-transparent text-[#1E2532] flex flex-col justify-between font-sans">
       {/* Frosted Glass Header */}
@@ -247,6 +269,47 @@ export const Login: React.FC = () => {
                   </>
                 )}
               </Button>
+
+              {/* Guest / Evaluator Quick Access */}
+              <div className="pt-1">
+                <div className="relative flex items-center justify-center my-3.5">
+                  <div className="border-t border-white/80 w-full" />
+                  <span className="bg-white/90 px-3 py-0.5 text-[10px] font-extrabold text-[#798393] uppercase tracking-wider rounded-full border border-white/80 absolute shadow-2xs">
+                    Or Evaluator / Reviewer Access
+                  </span>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleGuestLogin("coordinator")}
+                  className="w-full h-12 bg-white/90 hover:bg-white border-2 border-[#10B981]/40 hover:border-[#10B981] text-[#065F46] font-extrabold text-sm rounded-2xl shadow-sm flex items-center justify-center gap-2 cursor-pointer transition-all hover:shadow-md"
+                >
+                  <Sparkles className="w-4 h-4 text-[#10B981]" />
+                  Continue as Guest (Full Demo Access)
+                </Button>
+
+                <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2.5">
+                  <span className="text-[10px] font-semibold text-[#798393]">Switch Guest Role:</span>
+                  {(
+                    [
+                      { role: "coordinator", label: "Coordinator" },
+                      { role: "director", label: "Medical Director" },
+                      { role: "clinician", label: "Primary Doctor" },
+                      { role: "specialist", label: "Specialist" },
+                    ] as const
+                  ).map((item) => (
+                    <button
+                      key={item.role}
+                      type="button"
+                      onClick={() => handleGuestLogin(item.role)}
+                      className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-white/80 hover:bg-white text-[#1E2532] hover:text-[#10B981] border border-white/80 hover:border-[#10B981]/50 shadow-2xs transition-all cursor-pointer"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </form>
 
             <div className="mt-6 pt-5 border-t border-white/80 space-y-3">
