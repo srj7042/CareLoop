@@ -28,6 +28,7 @@ import { useStore } from "@/lib/store";
 import { getDefaultPathForRole } from "@/lib/permissions";
 import { motion, useReducedMotion } from "framer-motion";
 import { HeroAnimatedStage } from "@/components/landing/HeroAnimatedStage";
+import { Footer } from "@/components/Footer";
 
 export const PublicLanding: React.FC = () => {
   const navigate = useNavigate();
@@ -577,24 +578,8 @@ export const PublicLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* Frosted Footer */}
-      <footer className="py-12 border-t border-white/80 bg-white/60 backdrop-blur-md text-xs text-[#798393]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <HeartPulse className="w-4 h-4 text-[#10B981]" />
-            <span className="font-extrabold text-[#1E2532]">CareLoop Health Systems</span>
-            <span>&copy; 2026 CareLoop AI Inc. All rights reserved.</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-6 text-[#798393] font-semibold">
-            <Link to="/about" className="hover:text-[#1E2532] transition-colors">About Us</Link>
-            <Link to="/contact" className="hover:text-[#1E2532] transition-colors">Contact</Link>
-            <Link to="/help" className="hover:text-[#1E2532] transition-colors">Help Center</Link>
-            <Link to="/privacy" className="hover:text-[#1E2532] transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-[#1E2532] transition-colors">Terms of Service</Link>
-          </div>
-        </div>
-      </footer>
+      {/* Modern Responsive Footer */}
+      <Footer />
     </div>
   );
 };

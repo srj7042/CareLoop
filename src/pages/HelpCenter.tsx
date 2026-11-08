@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassCard, StatusPill } from "@/components/design-system";
+import { Footer } from "@/components/Footer";
 
 interface FAQItem {
   question: string;
@@ -207,23 +208,8 @@ export const HelpCenter: React.FC = () => {
         </GlassCard>
       </main>
 
-      {/* Footer */}
-      <footer className="py-12 border-t border-white/80 bg-white/60 backdrop-blur-md text-xs text-[#798393] mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <HeartPulse className="w-4 h-4 text-[#10B981]" />
-            <span className="font-extrabold text-[#1E2532]">CareLoop Health Systems</span>
-            <span>&copy; {new Date().getFullYear()} CareLoop AI Inc. All rights reserved.</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-6 text-[#798393] font-semibold">
-            <Link to="/privacy" className="hover:text-[#1E2532]">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-[#1E2532]">Terms of Service</Link>
-            <Link to="/contact" className="hover:text-[#1E2532]">Contact Support</Link>
-            <Link to="/about" className="hover:text-[#1E2532]">About Us</Link>
-          </div>
-        </div>
-      </footer>
+      {/* Modern Responsive Footer */}
+      <Footer />
     </div>
   );
 };

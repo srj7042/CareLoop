@@ -9,6 +9,7 @@ import {
   LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/Footer";
 
 export const NotFound: React.FC = () => {
   const navigate = useNavigate();
@@ -93,22 +94,8 @@ export const NotFound: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-[#E8ECE9] bg-[#F7F8F5] text-xs text-[#5B6660]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <HeartPulse className="w-4 h-4 text-[#609983]" />
-            <span className="font-extrabold text-[#1E2522]">CareLoop Health Systems</span>
-            <span>&copy; 2026 CareLoop AI Inc.</span>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <Link to="/privacy" className="hover:text-[#1E2522]">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-[#1E2522]">Terms</Link>
-            <Link to="/contact" className="hover:text-[#1E2522]">Contact</Link>
-          </div>
-        </div>
-      </footer>
+      {/* Modern Responsive Footer */}
+      <Footer />
     </div>
   );
 };
