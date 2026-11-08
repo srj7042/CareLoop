@@ -173,9 +173,6 @@ export const Login: React.FC = () => {
           {/* Left: Login Card */}
           <GlassCard className="lg:col-span-6 p-8 sm:p-10 rounded-[28px] shadow-[0_16px_36px_rgba(100,115,140,0.08)]">
             <div className="mb-6">
-              <div className="mb-3">
-                <StatusPill variant="lavender" label="Authorized Clinical Access" size="sm" />
-              </div>
               <h1 className="text-2xl sm:text-3xl font-black text-[#1E2532] tracking-tight mb-2">
                 Sign In to CareLoop
               </h1>
