@@ -286,7 +286,7 @@ export const Login: React.FC = () => {
                   className="w-full h-12 bg-white/90 hover:bg-white border-2 border-[#10B981]/40 hover:border-[#10B981] text-[#065F46] font-extrabold text-sm rounded-2xl shadow-sm flex items-center justify-center gap-2 cursor-pointer transition-all hover:shadow-md"
                 >
                   <Sparkles className="w-4 h-4 text-[#10B981]" />
-                  Continue as Guest (Full Demo Access)
+                  Continue as Guest
                 </Button>
 
                 <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2.5">
@@ -312,11 +312,7 @@ export const Login: React.FC = () => {
               </div>
             </form>
 
-            <div className="mt-6 pt-5 border-t border-white/80 space-y-3">
-              <div className="flex items-center justify-between text-[11px] text-[#798393] font-medium">
-                <span>Authorized clinical personnel only</span>
-                <span>8-hour session token</span>
-              </div>
+            <div className="mt-6 pt-5 border-t border-white/80">
               <div className="text-center">
                 <button
                   type="button"
