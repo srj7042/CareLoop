@@ -166,31 +166,6 @@ export const PublicLanding: React.FC = () => {
           >
             <HeroAnimatedStage />
           </motion.div>
-
-          {/* Key Metrics Strip */}
-          <motion.div
-            initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.55, ease: "easeOut" }}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto pt-8 border-t border-white/80"
-          >
-            <GlassCard className="p-5 rounded-[24px] text-left">
-              <div className="text-2xl sm:text-3xl font-black text-[#1E2532] mb-1">94.2%</div>
-              <div className="text-xs text-[#798393] font-semibold">Verified Loop Closure Rate</div>
-            </GlassCard>
-            <GlassCard className="p-5 rounded-[24px] text-left">
-              <div className="text-2xl sm:text-3xl font-black text-[#10B981] mb-1">&lt; 48 hrs</div>
-              <div className="text-xs text-[#798393] font-semibold">Mean Time to Patient Outreach</div>
-            </GlassCard>
-            <GlassCard className="p-5 rounded-[24px] text-left">
-              <div className="text-2xl sm:text-3xl font-black text-[#8B5CF6] mb-1">5 Languages</div>
-              <div className="text-xs text-[#798393] font-semibold">EN, தமிழ், తెలుగు, हिन्दी, मराठी</div>
-            </GlassCard>
-            <GlassCard className="p-5 rounded-[24px] text-left">
-              <div className="text-2xl sm:text-3xl font-black text-[#1E2532] mb-1">100%</div>
-              <div className="text-xs text-[#798393] font-semibold">Human Clinician Verification</div>
-            </GlassCard>
-          </motion.div>
         </div>
       </section>
 
