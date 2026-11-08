@@ -6,7 +6,6 @@ import {
   Users,
   Stethoscope,
   ArrowRight,
-  Activity,
   HeartPulse,
   Lock,
   Clock,
@@ -173,10 +172,6 @@ export const PublicLanding: React.FC = () => {
       <section id="workflows" className="py-20 lg:py-24 border-b border-white/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 border border-white/80 text-xs font-bold text-[#8B5CF6] mb-4 shadow-2xs">
-              <Activity className="w-3.5 h-3.5" />
-              Continuous Clinical Safeguards
-            </div>
             <h2 className="text-3xl sm:text-4xl font-black text-[#1E2532] tracking-tight mb-4">
               The Screening-to-Care Continuum
             </h2>
